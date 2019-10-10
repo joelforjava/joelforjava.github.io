@@ -82,6 +82,17 @@
 	<div class="ui main container">
 		  <div class="ui segments">
 		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html"><h1 class="ui grey inverted header">Adding Configuration Recommendations to the Kafka Kinesis Connector</h1></a>
+				<p>08 October 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>So, we've strengthened up our configuration validation logic for the Kafka Kinesis Connector but there's still more we can do to help those that want to use this plugin. Of course, the principles used in these articles should generally apply to most any Kafka Connector you create. The next step is to help recommend configuration values to our users. For example, we can validate that a user has given us a valid AWS region, e.g. <code>us-east-1</code>, <code>us-west-1</code>, etc. but the user may not know all the valid regions available. For this purpose, we can provide a recommender to help recommend values to the user by implementing the <code>ConfigDef.Recommender</code> interface.</p>
+</p>
+				<p><a href="blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
 				<a href="blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html"><h1 class="ui grey inverted header">Adding Configuration Validation to the Kafka Kinesis Connector</h1></a>
 				<p>02 October 2019</p>
 			</div>

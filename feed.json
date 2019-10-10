@@ -6,6 +6,15 @@
     "description": "A site for all things Java",
     "items": [
         {
+            "id": "https://joelforjava.com/blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html",
+            "title": "Adding Configuration Recommendations to the Kafka Kinesis Connector",
+            "url": "https://joelforjava.com/blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html"
+            "date_published": "2019-10-08T00:00:00-0400",
+            "content_html": "&lt;p&gt;So, we&apos;ve strengthened up our configuration validation logic for the Kafka Kinesis Connector but there&apos;s still more we can do to help those that want to use this plugin. Of course, the principles used in these articles should generally apply to most any Kafka Connector you create. The next step is to help recommend configuration values to our users. For example, we can validate that a user has given us a valid AWS region, e.g. &lt;code&gt;us-east-1&lt;/code&gt;, &lt;code&gt;us-west-1&lt;/code&gt;, etc. but the user may not know all the valid regions available. For this purpose, we can provide a recommender to help recommend values to the user by implementing the &lt;code&gt;ConfigDef.Recommender&lt;/code&gt; interface.&lt;/p&gt;
+",
+            "tags": [ "kafka",   "kinesis",   "kafka connect",   "java" ]
+        }, 
+        {
             "id": "https://joelforjava.com/blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html",
             "title": "Adding Configuration Validation to the Kafka Kinesis Connector",
             "url": "https://joelforjava.com/blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html"
