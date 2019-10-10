@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Refactoring: Extract Class (Part 1)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Refactoring: Extract Class (Part 1)
+		<div class="sub header">
+		29 May 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>Refactoring is an important step in the software development process. It should be practiced early and often to help maintain and improve code quality over time. Of course, we're all guilty of putting this off when deadlines and management expectations force us to choose between just having something working on time or improving upon your existing code while writing new functionality. If we're lucky, we're able to go back and refactor the code before the project is over, but it must be done with great care to ensure that we do not break any of the existing functionality. This is where it would be important to have an existing test suite to verify everything runs as expected before and after refactoring.</p>
+<!--more-->
+<p>In my case, if you look at the <a href="https://github.com/joelforjava/carmix-collector/tree/b83078b18e6040f6b07b970c2662f312f6070906">carmix-creator</a> project, I have a monolithic class that extends <code>JFrame</code>, which does not make it easy to test all of the moving parts separately. I want to get this project to that point, so in order to do that I need to carefully refactor some of the functionality out into a separate class. A class should not take on more responsibilities than required. There are several areas of this class we could look at for refactoring purposes, including the parsing of the M3U files and copying files. The GUI class should focus on displaying the form and leave the rest of the work to other classes. For starters, I'll be refactoring out the copy functionality into a new class whose sole purpose is to handle copying files.</p>
+<p>Once the copy functionality is in its own class, it should be easier to test. There are several options on how we could refactor the copy functionality. We could create a utility-type class and give it a static copy function, however, I try to refrain from creating utility/helper-type classes as much as possible. For now, I'll create a new class <code>CopyFileService.java</code> and move the whole copy method over to this class. If you're using an IDE like Eclipse or Intellij, you'll probably notice that this method depends on another method, <code>verifyFile</code>. We should go ahead and move this method over as well.</p>
+<p>Here's a brief view of how the new class looks:</p>
+<?prettify?>
+<pre><code>public class CopyFileService {
+    public void copy(Path inPath, Path outPath) throws IOException {
+        // ... original method body goes here ...
+    }
+
+    private static boolean verifyFile(Path aPath, String indFileDir, String indReadWrite) throws IOException {
+        // ... original method body goes here ...
+    }
+}
+</code></pre>
+<p>Now, we'll need to create an instance of the <code>CopyFileService</code> inside the GUI class and replace the call to the copy method within processTrackURL with a call to the CopyFileService method.</p>
+<p>Before:</p>
+<?prettify?>
+<pre><code>copy(source, target);
+</code></pre>
+<p>After:</p>
+<?prettify?>
+<pre><code>private CopyFileService copyService = new CopyFileService();
+</code></pre>
+<?prettify?>
+<pre><code>copyService.copy(source.target);
+</code></pre>
+<p>We could take this first refactoring a bit further and create an interface for the newly created <code>CopyFileService</code> to implement, but for now, I'll leave it be.</p>
+<p>The next thing to be refactored will be the playlist processing methods, but that will come in a later article because this refactoring will have the potential to change how the program processes the data and is deserving of an article all its own. We'll also start looking into writing some tests to help make sure everything is working the way it is expected to. Keep an eye out for those in the coming days and weeks. These changes are located in the GitHub <a href="https://github.com/joelforjava/carmix-collector/tree/8431630ab64bb60542b37240267cdb52eb1e70f6">repo</a>.</p>
+<p>So, this has been a first attempt at refactoring, more specifically the technique called <a href="https://refactoring.com/catalog/extractClass.html">Extract Class</a>. I hope it has proved useful if you're new to refactoring or just needed a quick refresher for this particular technique.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

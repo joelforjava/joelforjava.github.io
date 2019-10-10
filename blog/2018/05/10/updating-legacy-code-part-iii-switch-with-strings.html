@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Updating Legacy Code, Part III: Switch with Strings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Updating Legacy Code, Part III: Switch with Strings
+		<div class="sub header">
+		10 May 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>The past few posts have been going over some of the improvements that came with updating to Java 7. This article will showcase how to use strings in a switch statement using the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-creator</a> project.</p>
+<p>Prior to Java 7, you had to use constants of type <code>Byte</code>, <code>Character</code>, <code>Short</code>, <code>Integer</code> constants (or their primitive equivalents) or <code>enum</code>s as values for the cases in a <code>switch</code> statement. Personally, I think this is the way to go, but it isn't always possible and I'm glad they made the change. The majority of my past projects made minimal use of <code>enum</code> or <code>Integer</code>/<code>int</code> constants. They relied heavily on Strings, so this change would help make an endless sea of if statements look a little bit better. Even in my own code, I've only started to embrace enums, but it'll be a while before I get to writing about all that.</p>
+<!--more-->
+<p>The carmix-creator project has a method called <code>verifyFile</code>. It makes use of several <code>if</code> statements. It can be cleaned up some by switching some of the <code>if</code> statements with <code>switch</code> statements. Prior to Java 7, you could only use a switch statement with an integer or enumerated type. But now, we can use strings.</p>
+<p>As an example of a method that could make use of this construct, here is the old version of the verifyFile method:</p>
+<?prettify?>
+<pre><code>private boolean verifyFile(File aFile, String indFileDir, String indReadWrite) throws IOException {
+    if (!aFile.exists()) {
+        throw new IOException(&quot;File Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+    }
+    if (FILE_TYPE.equals(indFileDir)) {
+        if (!aFile.isFile()) {
+            throw new IOException(&quot;File Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+        }
+    } else if (DIR_TYPE.equals(indFileDir)) {
+        if (!aFile.isDirectory()) {
+            throw new IOException(&quot;Directory Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+        }
+    }
+    if (READ_FILE.equals(indReadWrite)) {
+        if (!aFile.canRead()) {
+            throw new IOException(&quot;File Verification: Cannot read file &quot; + aFile.getPath());
+        }
+    } else if (WRITE_FILE.equals(indReadWrite)) {
+        if (!aFile.canWrite()) {
+            throw new IOException(&quot;File Verification: Cannot write to file &quot; + aFile.getPath());
+        }
+    }
+    return true;
+}
+</code></pre>
+<p>Updated:</p>
+<?prettify?>
+<pre><code>private boolean verifyFile(File aFile, String indFileDir, String indReadWrite) throws IOException {
+    if (!aFile.exists()) {
+        throw new IOException(&quot;File Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+    }
+    switch (indFileDir) {
+    case FILE_TYPE:
+        if (!aFile.isFile()) {
+            throw new IOException(&quot;File Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+        }
+        break;
+    case DIR_TYPE:
+        if (!aFile.isDirectory()) {
+            throw new IOException(&quot;Directory Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+        }
+        break;
+    default :
+        break;
+    }
+    switch (indReadWrite) {
+    case READ_FILE:
+        if (!aFile.canRead()) {
+            throw new IOException(&quot;File Verification: Cannot read file &quot; + aFile.getPath());
+        }
+        break;
+    case WRITE_FILE:
+        if (!aFile.canWrite()) {
+            throw new IOException(&quot;File Verification: Cannot write to file &quot; + aFile.getPath());
+        }
+        break;
+    default :
+        break;
+    }
+    return true;
+}
+</code></pre>
+<p>If you're interested, I did manage to make some other changes to this method by using the NIO.2 classes. These updates can be seen in <a href="https://github.com/joelforjava/carmix-collector/blob/97db0b9cc7eb0b70491b221a7c219d71d711b22a/src/main/java/com/joelforjava/CarMixCreatorGUI.java">GitHub</a>.</p>
+<p>Switch with strings may seem like a small change, but I can think of at least a dozen places it might be useful in some of the legacy code with which I have worked and I imagine most everyone could think of at least one area in which it would improve the code to some degree.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

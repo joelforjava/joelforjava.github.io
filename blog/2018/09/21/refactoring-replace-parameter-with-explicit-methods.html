@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Refactoring: Replace Parameter With Explicit Methods</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Refactoring: Replace Parameter With Explicit Methods
+		<div class="sub header">
+		21 September 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>As I continue to refactor and refine my <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-collector</a> project, I've come across a method that I really don't like. It looks too busy and depends on two separate parameters to determine what work should be done inside the method. Here's the method as it currently exists:</p>
+<?prettify?>
+<pre><code>private static boolean verifyFile(Path aPath, String indFileDir, String indReadWrite) throws IOException {
+    if (!Files.exists(aPath)) {
+        throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+    }
+
+    switch (indFileDir) {
+        case FILE_TYPE:
+            if (!Files.isRegularFile(aPath)) {
+                throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+            }
+            break;
+        case DIR_TYPE:
+            if (!Files.isDirectory(aPath)) {
+                throw new IOException(&quot;Directory Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+            }
+            break;
+    }
+
+    switch (indReadWrite) {
+        case READ_FILE:
+            if (!Files.isReadable(aPath)) {
+                throw new IOException(&quot;File Verification: Cannot read file &quot; + aPath.getFileName());
+            }
+            break;
+        case WRITE_FILE:
+            if (!Files.isWritable(aPath)) {
+                throw new IOException(&quot;File Verification: Cannot write to file &quot; + aPath.getFileName());
+            }
+            break;
+        }
+    return true;
+}
+</code></pre>
+<p>What we should do is create a new method for each possible parameter value. We should use the <a href="https://refactoring.com/catalog/replaceParameterWithExplicitMethods.html" rel="noopener" target="_blank">Replace Parameter With Explicit Methods</a> refactoring.</p>
+<!--more-->
+<p>In the case of this method, we have two parameters that each have two possible values, so we will introduce four methods, two that handle the possible values of <code>indFileDir</code> and two that handle the cases of <code>indReadWrite</code>. We will refactor this method by removing one parameter at a time, starting with <code>indReadWrite</code>. For <code>verifyFile</code>, <code>indReadWrite</code> is an indicator that states whether we should check if a path is readable or if it is writable. So, we should create two methods, <code>canRead</code> and <code>canWrite</code>. Their implementation follows.</p>
+<?prettify?>
+<pre><code>private static boolean canRead(Path path) throws IOException {
+    if (!Files.isReadable(path)) {
+        throw new IOException(&quot;File Verification: Cannot read file &quot; + aPath.getFileName());
+    }
+    return true;
+}
+
+private static boolean canWrite(Path path) throws IOException {
+    if (!Files.isWritable(path)) {
+        throw new IOException(&quot;File Verification: Cannot write to file &quot; + aPath.getFileName());
+    }
+    return true;
+}
+</code></pre>
+<p>At this point, we should add their usages to where <code>verifyFile</code> is called:</p>
+<?prettify?>
+<pre><code>public void copy(Path inPath, Path outPath) throws IOException {
+    // ...
+    verifyFile(inPath FILE_TYPE, READ_FILE);
+    canRead(inPath);
+
+    if (Files.exists(outPath)) {
+        // ...
+    } else {
+        // ...
+        verifyFile(inPath, FILE_TYPE, WRITE_FILE);
+        canWrite(outPath);
+    }
+}
+</code></pre>
+<p>Now we need to take care of the other indicator parameter, <code>indFileDir</code>. In this case we're using the parameter to indicate if the path refers to a file or a directory. In this case, we should create new methods reflecting this usage, such as isFile or isDirectory.</p>
+<?prettify?>
+<pre><code>public static boolean isFile(Path path) throws IOException {
+    if (!Files.isRegularFile(path)) {
+        throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+    }
+    return true;
+}
+
+public static boolean isDirectory(Path path) throws IOException {
+    if (!Files.isDirectory(path)) {
+        throw new IOException(&quot;Directory Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+    }
+    return true;
+}
+</code></pre>
+<p>Now, we can just replace the remaining calls to <code>verifyFile</code> to the corresponding calls to <code>isFile</code> or <code>isDirectory</code> and then get rid of the <code>verifyFile</code> method. We really only need to use <code>isFile</code> as we were never actually checking directories anyway, so it's gone too. Also, you may notice we didn't replace the 'exists' functionality that was present at the top of <code>verifyFile</code>. The check was redundant as several calls within the Files class check for existence, including <code>isReadable</code> and <code>isWritable</code>.</p>
+<p>And, there we have it, a basic exercise in implementing the 'Replace parameter with explicit method' refactoring. The smaller methods are more explicit and help get across what we're trying to accomplish with calling each of them and it removes the need for a couple of confusing indicator Strings to dictate method flow.</p>
+<aside>
+After thought: In the updated code, there's a problem with the call to `canWrite`. If you notice the accompanying call to `verifyFile` it uses `inPath`, where it should be calling `outPath`. However, using `outPath` causes no files to be copied. It's a bug I'll need to come back and figure out at a later time and is likely related to what I just mentioned about checking for existence in the call to `isWritable`. For the time being, I'll leave the call to `canWrite` commented out and will likely remove it in the future since it really doesn't make much sense to check if a non-existing file can be written to.
+</aside>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

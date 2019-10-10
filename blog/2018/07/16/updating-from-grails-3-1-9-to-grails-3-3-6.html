@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Updating from Grails 3.1.9 to Grails 3.3.6</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Updating from Grails 3.1.9 to Grails 3.3.6
+		<div class="sub header">
+		16 July 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>I had intended to write an article on upgrading to Grails 3.3.5, but I ran into an <a href="https://github.com/grails/grails-core/issues/10993">issue</a> that prevented me from completing the upgrade. Luckily, this issue was fixed in the 3.3.6 release.</p>
+<p>I will walk through the steps I performed to upgrade my Grails 3.1.9 application, Ripplr to version 3.3.6. These steps will likely work for any 3.1.x to 3.3.x upgrade, but I have only successfully tested upgrading with this specific combination.</p>
+<p>Here are the steps I performed:</p>
+<ol>
+<li>Update build.gradle
+<ul>
+<li>Update GORM Version</li>
+<li>Update to Hibernate 5</li>
+<li>Add Grails test mixins dependency for tests that are now using a legacy framework</li>
+<li>Add new dependencies</li>
+<li>Update plugin versions, if at all possible\</li>
+</ul>
+</li>
+<li>Update application.yml and application.groovy</li>
+<li>Update resources.groovy</li>
+<li>Move Bootstrap.groovy and UrlMappings.groovy out of the default package</li>
+<li>Update Gradle Wrapper</li>
+<li>Add Grails wrapper</li>
+<li>Update Logging Configuration</li>
+<li>Fix broken unit tests (or Ignore them)</li>
+<li>Fix broken integration tests (or Ignore them)</li>
+<li>Verify CORS still works</li>
+<li>Fix Hibernate startup errors that occurred after updates</li>
+</ol>
+<!--more-->
+<h2>Update build.gradle</h2>
+<h3>Update GORM Version</h3>
+<p>Grails 3.3 uses GORM 6.1. Moving from version 5 to 6.1 may prove challenging for complex setups, but it was mostly pain free for me. For example, you may need to add configuration to <code>application.groovy</code> to make sure GORM uses properties instead of fields if your domain objects depend on property access.</p>
+<?prettify?>
+<pre><code>/* application.groovy */
+import javax.persistence.*
+
+grails.gorm.default.mapping = {
+    '*'(accessType: AccessType.PROPERTY)
+}
+</code></pre>
+<p>Or, you may be using older versions of the Spring Security plugin in which the SpringSecurityService class is injected into your User class (as is done in Ripplr). In cases like this, you'll need to set autowire to true in your domain class.</p>
+<?prettify?>
+<pre><code>/* User.groovy */
+static mapping = {
+    autowire = true
+}
+</code></pre>
+<p>Further upgrade details can be found in the GORM for Hibernate <a href="http://gorm.grails.org/latest/hibernate/manual/index.html#upgradeNotes" rel="noopener" target="_blank">documentation</a>.</p>
+<h3>Update to Hibernate 5</h3>
+<p>GORM 6.1 was built with Hibernate 5.2 in mind. You can continue to use Hibernate 4 if you'd like, but Hibernate 5 has several upgrades that may be worth it to you. For starters, you can now use the new Java 8 Date and Time classes as BasicTypes. As always, be aware of any possible breaking changes, especially if you're making use of lower level Hibernate APIs, by looking over the <a href="https://github.com/hibernate/hibernate-orm/wiki/Migration-Guide---5.2" rel="noopener" target="_blank">migration guide</a>.</p>
+<?prettify?>
+<pre><code>/* build.gradle */
+buildscript {
+    //...
+    dependencies {
+        classpath &quot;org.grails.plugins:hibernate5:${gormVersion-&quot;.RELEASE&quot;}&quot;
+    }
+}
+//...
+dependencies {
+    //..
+    compile &quot;org.grails.plugins:hibernate5&quot;
+    //..
+}
+</code></pre>
+<h3>Add Grails Test Mixin Dependency</h3>
+<p>Grails 3.3 introduced the <a href="https://testing.grails.org/" rel="noopener" target="_blank">Grails Testing Support Framework</a>, which means that the older tests should be updated to use the new framework as soon as possible. However, in the meantime, you can add the <a href="https://grails-plugins.github.io/grails-test-mixin-plugin/latest/guide/index.html" rel="noopener" target="_blank">Test Mixin Framework</a> support via a dependency. I will slowly migrate to the new framework.</p>
+<?prettify?>
+<pre><code>/* build.gradle */
+testCompile &quot;org.grails:grails-test-mixins:3.3.0&quot;
+</code></pre>
+<h3>Add new dependencies</h3>
+<p>Several new dependencies are added for Grails 3.3, including the new testing frameworks. Even if you plan on using the mixins for a while longer, you should go ahead and add the new dependencies so you can start migrating as soon as possible. Also, several libraries have been externalized into separate projects, such as <code>GSP</code> and <code>Events</code>. Below is a sample of the dependencies I added for Ripplr:</p>
+<?prettify?>
+<pre><code>/* build.gradle */
+compile &quot;org.grails:grails-logging&quot;
+compile &quot;org.grails:grails-plugin-rest&quot;
+compile &quot;org.grails:grails-plugin-databinding&quot;
+compile &quot;org.grails:grails-plugin-i18n&quot;
+compile &quot;org.grails:grails-plugin-services&quot;
+compile &quot;org.grails:grails-plugin-url-mappings&quot;
+compile &quot;org.grails:grails-plugin-interceptors&quot;
+</code></pre>
+<p>In all honesty, I didn't just &quot;know&quot; this, I created an empty Grails 3.3.6 project and merged the Gradle build and property files with my existing files.</p>
+<h3>Update Plugins - Spring Security</h3>
+<p>As mentioned above, in addition to updating the version to 3.2.1, I added an <code>autowire</code> section to the <code>User</code> domain class to allow use of the <code>SpringSecurityService</code>.</p>
+<?prettify?>
+<pre><code>/* build.gradle */
+compile &quot;org.grails.plugins:spring-security-core:3.2.1&quot;
+</code></pre>
+<h3>Update Plugins - Elasticsearch</h3>
+<p>The latest Elasticsearch plugin (2.4.1) is built to work with Elasticsearch 5.4.1. Ripplr was working with 2.3.3, so this requires an upgrade, that luckily has a minimal impact on Ripplr due to its development status. There's a chance I could've fought with the plugin and configuration to make it work with 2.3.3, but I figured it would be best to go ahead and move to 5.4.1. Details on making mapping migrations can be found in the plugin <a href="https://puneetbehl.github.io/elasticsearch-grails-plugin/2.4.x/index.html#mappingMigrations" rel="noopener" target="_blank">documentation</a>.<br />
+I initially added a dependency on the mapper plugin, since it was <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.6/mapper-attachments.html" rel="noopener" target="_blank">deprecated</a> in Elasticsearch 5.0 and the application would not start without it. However, after looking through the documentation a bit more I discovered that if you're not making use of the mapper plugin, you can <a href="https://puneetbehl.github.io/elasticsearch-grails-plugin/2.4.x/index.html#client-mode" rel="noopener" target="_blank">disable</a> it in application.yml.</p>
+<p>Adding the mapper plugin back to Elasticsearch:</p>
+<?prettify?>
+<pre><code>/* build.gradle */
+compile 'org.grails.plugins:elasticsearch:2.4.1'
+runtime 'org.elasticsearch.plugin:mapper-attachments:2.4.6'
+</code></pre>
+<p>Disabling the mapper plugin:</p>
+<?prettify?>
+<pre><code># application.yml
+elasticSearch:
+    plugin:
+        mapperAttachment:
+            enabled: false
+</code></pre>
+<h2>Update resources.groovy</h2>
+<p>Older versions of Spring Boot had the <code>FilterRegisterationBean</code> in the <code>org.springframework.boot.context.embedded</code> package. Version 1.5 removed this package and therefore I had to use an updated package of <code>org.springframework.boot.web.servlet</code> in <code>resources.groovy</code>.</p>
+<?prettify?>
+<pre><code>/* resources.groovy */
+import org.springframework.boot.web.servlet.FilterRegistrationBean
+</code></pre>
+<h2>Move Bootstrap.groovy and UrlMappings.groovy out of the default package</h2>
+<p>As per the upgrade <a href="http://docs.grails.org/3.2.x/guide/upgrading.html#upgrading31x" rel="noopener" target="_blank">documentation</a>, we should stop using the default namespace as this may cause issues when the application is packaged inside a JAR or WAR file. I moved mine to the <code>ripplr.grails3</code> package. Also make sure you move the file to the correct folder structure.</p>
+<?prettify?>
+<pre><code>/* Bootstrap.groovy */
+package ripplr.grails3
+</code></pre>
+<h2>Update Gradle Wrapper</h2>
+<p>I updated the Gradle Wrapper to version 3.5 (the default version with Grails 3.3.6) using <a href="https://gradle.org/install/#with-the-gradle-wrapper" rel="noopener" target="_blank">this</a> method. Grails 3.3 will also work with Gradle 4.x, but my current script has a few areas that would break with Gradle 4, so I'm leaving it at 3.5 for now.</p>
+<pre><code>$ ./gradlew wrapper --gradle-version=3.5 --distribution-type=bin
+</code></pre>
+<h2>Add Grails Wrapper</h2>
+<p>The Grails wrapper was introduced in Grails 2.1, but unfortunately was removed from Grails 3 until version <a href="http://docs.grails.org/3.2.3/guide/single.html#whatsNewGrailsWrapper" rel="noopener" target="_blank">3.2.3</a>. Since Ripplr was created prior to the reintroduction of the Grails wrapper, I used the empty project I mentioned above and copied the relevant files into the Ripplr project.</p>
+<h2>Update Logging Configuration</h2>
+<p>Grails 3.3 also updated how logs are <a href="http://docs.grails.org/3.3.x/guide/conf.html#loggerName" rel="noopener" target="_blank">configured</a>. Prior versions of grails relied on the convention of <code>grails.app.&lt;type&gt;.&lt;fully-qualified-class-name&gt;&lt;/fully-qualified-class-name&gt;&lt;/type&gt;</code>. However, now you can just use the fully qualified class name to configure your logs.</p>
+<?prettify?>
+<pre><code>/* logback.groovy */
+logger 'com.joelforjava.ripplr.UserController', DEBUG, ['STDOUT'], false
+</code></pre>
+<h2>Fix Broken Unit Tests (Or Ignore Them)</h2>
+<p>I don't typically advocate for ignoring tests as it could mask future problems with your code and cause other potential issues during the software development lifecycle. However, in my case, I think I may have unearthed something wrong with how I wrote the tests themselves or something wrong with the domain modeling. I'll ignore these tests temporarily and then work on fixing the problems with the tests once I've completed the upgrade. I don't think it's an upgrade issue, but a me issue! This will also give me a starting point for upgrading to the new Grails Testing Support Framework.</p>
+<h2>Fix Broken Integration Tests (Or Ignore Them)</h2>
+<p>I used the same logic here as with the unit tests. Luckily, the Integration tests all passed, so there was no need to ignore or fix any of them.</p>
+<h2>Verify CORS still works</h2>
+<p>Beyond my small change to <code>resources.groovy</code>, I didn't have to touch the CORS configuration. I still wanted to make sure it was working as expected. In the future, I'll likely move the configuration to <code>application.yml</code>.</p>
+<h2>Fix Hibernate startup errors that occurred after updates</h2>
+<p>After the upgrade, I noticed a couple of errors that would appear whenever I ran any grails or gradle commands. However, no functionality seems to be impacted, so I will leave them be for now and come back and update here when I figure out the solution.</p>
+<h2>Conclusion</h2>
+<p>This has been my very brief overview of how I upgraded my Grails 3.1.9 application to Grails 3.3.6. There is still a lot of work to be done, such as upgrading the tests to use the new framework and updating how I configure CORS, but the steps outlined here have given me a good starting point for moving forward with the latest version of Grails.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

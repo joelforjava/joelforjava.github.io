@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Adding Configuration Validation to the Kafka Kinesis Connector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Adding Configuration Validation to the Kafka Kinesis Connector
+		<div class="sub header">
+		02 October 2019
+
+		</div>
+	</h1>
+
+
+	<p><p>As it currently stands, you can easily feed invalid property values to the Kafka Kinesis Firehose Connector, such as a batch size of 1000, when the maximum batch size allowed by Firehose is only 500. Thankfully, Kafka Connect provides a mechanism to help with validating properties. The REST API provides a validate endpoint at <code>/connector-plugins/&lt;CONNECTOR_CLASS_NAME&gt;/config/validate</code>.</p>
+<!--more-->
+<p>If you try running the following command:</p>
+<?prettify?>
+<pre><code>curl -XPUT -H &quot;Content-type: application/json&quot; http://localhost:8083/connector-plugins/FirehoseSinkConnector/config/validate --data '{&quot;connector.class&quot;: &quot;com.amazon.kinesis.kafka.FirehoseSinkConnector&quot;, &quot;topics&quot;: &quot;Hello-World-Topic&quot;}'
+</code></pre>
+<p>You will get a response similar to the truncated one below:</p>
+<?prettify?>
+<pre><code>{
+    &quot;name&quot;: &quot;com.amazon.kinesis.kafka.FirehoseSinkConnector&quot;,
+    &quot;error_count&quot;: 0,
+    &quot;groups&quot;: [
+        &quot;Common&quot;,
+        &quot;Transforms&quot;,
+        &quot;Error Handling&quot;
+    ],
+    &quot;configs&quot;: [
+        {
+            &quot;definition&quot;: {
+                &quot;name&quot;: &quot;name&quot;,
+                &quot;type&quot;: &quot;STRING&quot;,
+                &quot;required&quot;: true,
+                &quot;default_value&quot;: null,
+                &quot;importance&quot;: &quot;HIGH&quot;,
+                &quot;documentation&quot;: &quot;Globally unique name to use for this connector.&quot;,
+                &quot;group&quot;: &quot;Common&quot;,
+                &quot;width&quot;: &quot;MEDIUM&quot;,
+                &quot;display_name&quot;: &quot;Connector name&quot;,
+                &quot;dependents&quot;: [],
+                &quot;order&quot;: 1
+            },
+            &quot;value&quot;: {
+                &quot;name&quot;: &quot;name&quot;,
+                &quot;value&quot;: &quot;dev_cluster_1&quot;,
+                &quot;recommended_values&quot;: [],
+                &quot;errors&quot;: [],
+                &quot;visible&quot;: true
+            }
+        },
+        {
+            &quot;definition&quot;: {
+                &quot;name&quot;: &quot;connector.class&quot;,
+                &quot;type&quot;: &quot;STRING&quot;,
+                &quot;required&quot;: true,
+                &quot;default_value&quot;: null,
+                &quot;importance&quot;: &quot;HIGH&quot;,
+                &quot;documentation&quot;: &quot;Name or alias of the class for this connector. Must be a subclass of org.apache.kafka.connect.connector.Connector. If the connector is org.apache.kafka.connect.file.FileStreamSinkConnector, you can either specify this full name,  or use \&quot;FileStreamSink\&quot; or \&quot;FileStreamSinkConnector\&quot; to make the configuration a bit shorter&quot;,
+                &quot;group&quot;: &quot;Common&quot;,
+                &quot;width&quot;: &quot;LONG&quot;,
+                &quot;display_name&quot;: &quot;Connector class&quot;,
+                &quot;dependents&quot;: [],
+                &quot;order&quot;: 2
+            },
+            &quot;value&quot;: {
+                &quot;name&quot;: &quot;connector.class&quot;,
+                &quot;value&quot;: &quot;com.amazon.kinesis.kafka.FirehoseSinkConnector&quot;,
+                &quot;recommended_values&quot;: [],
+                &quot;errors&quot;: [],
+                &quot;visible&quot;: true
+            }
+        }
+    ]
+}
+</code></pre>
+<p>You should see definitions for properties such as <code>topics</code>, <code>topics.regex</code>, <code>errors.retry.timeout</code>, and the other properties provided by Kafka Connect out of the box. You will also see any errors caused by any of the values we provide for those properties. However, there are no entries for our properties, such as <code>region</code> or <code>batchSizeInBytes</code>. How do we get those entries?</p>
+<p>At the most basic level, we need to provide a custom implementation of the <code>config()</code> method in <code>FirehoseSinkConnector</code>. We do this by providing our own <code>ConfigDef</code> rather than the default <code>new ConfigDef()</code> that is currently returned.</p>
+<h3>Implementing a Custom ConfigDef</h3>
+<p>This is where I take a bit of inspiration from the <a href="https://github.com/confluentinc/kafka-connect-elasticsearch">Confluent Elasticsearch Connector</a> and create a new class, <code>FirehoseSinkConnectorConfig</code>, that handles the creation of this new <code>ConfigDef</code>. For example, if we want to add a definition for the <code>region</code> property, we could create the following:</p>
+<?prettify?>
+<pre><code>private static void addConfig(ConfigDef configDef) {
+    int offset = 0;
+    final String group = &quot;AWS Configuration&quot;;
+    configDef.define(
+            REGION_CONFIG,
+            ConfigDef.Type.STRING,
+            &quot;us-east-1&quot;,
+            ConfigDef.Importance.HIGH,
+            &quot;Specify the region of your Kinesis Firehose&quot;,
+            group,
+            ++offset,
+            ConfigDef.Width.SHORT,
+            &quot;AWS Region&quot;);
+    // Add others
+}
+</code></pre>
+<p>We can then change the <code>FirehoseSinkConnector.config</code> method to return <code>FirehoseSinkConnectorConfig.CONFIG</code>, which contains the custom-built <code>ConfigDef</code> definition, and this updated config will be displayed when you try to validate your configuration against the REST API.</p>
+<?prettify?>
+<pre><code>curl -XPUT -H &quot;Content-type: application/json&quot; http://localhost:8083/connector-plugins/FirehoseSinkConnector/config/validate --data '{&quot;connector.class&quot;: &quot;com.amazon.kinesis.kafka.FirehoseSinkConnector&quot;, &quot;topics&quot;: &quot;Hello-World-Topic&quot;, &quot;batchSize&quot;: 600}'
+</code></pre>
+<p>Will result in:</p>
+<?prettify?>
+<pre><code>{
+    &quot;name&quot;: &quot;com.amazon.kinesis.kafka.FirehoseSinkConnector&quot;,
+    &quot;error_count&quot;: 0,
+    &quot;groups&quot;: [
+        &quot;Common&quot;,
+        &quot;Transforms&quot;,
+        &quot;Error Handling&quot;,
+        &quot;AWS Configuration&quot;
+    ],
+    &quot;configs&quot;: [
+        {
+            &quot;definition&quot;: {
+                &quot;name&quot;: &quot;region&quot;,
+                &quot;type&quot;: &quot;STRING&quot;,
+                &quot;required&quot;: false,
+                &quot;default_value&quot;: &quot;us-east-1&quot;,
+                &quot;importance&quot;: &quot;HIGH&quot;,
+                &quot;documentation&quot;: &quot;Specify the region of your Kinesis Firehose&quot;,
+                &quot;group&quot;: &quot;AWS Configuration&quot;,
+                &quot;width&quot;: &quot;SHORT&quot;,
+                &quot;display_name&quot;: &quot;AWS Region&quot;,
+                &quot;dependents&quot;: [],
+                &quot;order&quot;: 1
+            },
+            &quot;value&quot;: {
+                &quot;name&quot;: &quot;region&quot;,
+                &quot;value&quot;: &quot;us-east-1&quot;,
+                &quot;recommended_values&quot;: [],
+                &quot;errors&quot;: [],
+                &quot;visible&quot;: true
+            }
+        },
+        {
+            &quot;definition&quot;: {
+                &quot;name&quot;: &quot;batchSize&quot;,
+                &quot;type&quot;: &quot;INT&quot;,
+                &quot;required&quot;: false,
+                &quot;default_value&quot;: &quot;500&quot;,
+                &quot;importance&quot;: &quot;HIGH&quot;,
+                &quot;documentation&quot;: &quot;Number of messages to be batched together. Firehose accepts at max 500 messages in one batch.&quot;,
+                &quot;group&quot;: &quot;AWS Configuration&quot;,
+                &quot;width&quot;: &quot;SHORT&quot;,
+                &quot;display_name&quot;: &quot;Maximum Number of Messages to Batch&quot;,
+                &quot;dependents&quot;: [],
+                &quot;order&quot;: 4
+            },
+            &quot;value&quot;: {
+                &quot;name&quot;: &quot;batchSize&quot;,
+                &quot;value&quot;: &quot;600&quot;,
+                &quot;recommended_values&quot;: [],
+                &quot;errors&quot;: [],
+                &quot;visible&quot;: true
+            }
+        }
+    ]
+}
+</code></pre>
+<p>When calling the REST API after the updated code has been deployed, you should see an entry for the <code>region</code> property and any additional properties you've defined in your custom <code>ConfigDef</code>. Also notice we passed an invalid value for <code>batchSize</code>, however it doesn't show an error. We still need to do a little bit more work to handle the validation.</p>
+<h3>Adding Configuration Validation</h3>
+<p>We do this with the help of <code>ConfigDef.Validator</code>s. The <code>Validator</code> class allows us to provide any kind of special validation logic for our configurations, such as ensuring we use a valid <code>region</code> value.</p>
+<p>We can provide an implementation for a <code>Validator</code> using a Lambda and add the following the the <code>FirehoseSinkConnectorConfig</code> class:</p>
+<?prettify?>
+<pre><code>private static final ConfigDef.Validator batchSizeValidator = (name,  value) -&gt; {
+    Integer intValue = (Integer) value;
+    if (intValue &lt;= 0 || intValue &gt; MAX_BATCH_SIZE) {
+        throw new ConfigException(name, intValue, &quot;Batch size must be greater than zero or no greater than 500&quot;);
+    }
+};
+</code></pre>
+<p>Even better than this, for our current use case, Connect provides some sample implementations of <code>Validator</code>, including <code>Range</code> and <code>ValidList</code>. So we can make our <code>batchSizeValidator</code> even simpler:</p>
+<?prettify?>
+<pre><code>private static final ConfigDef.Range batchSizeValidator = ConfigDef.Range.between(0, MAX_BATCH_SIZE);
+</code></pre>
+<p>We can add this validator implementation to our configuration definition and now it'll reject any invalid values, which can be shown in the following unit test:</p>
+<?prettify?>
+<pre><code>@Test(expectedExceptions = ConfigException.class, expectedExceptionsMessageRegExp = &quot;Invalid value.*&quot;)
+public void testPropertyWithInvalidMaxValueWillBeRejected() {
+    Map&lt;String, String&gt; props = new HashMap&lt;&gt;();
+    String batchSize = &quot;5000&quot;;
+    props.put(FirehoseSinkConnectorConfig.MAPPING_FILE_CONFIG, &quot;sample_cluster_2_w_filters.yaml&quot;);
+    props.put(FirehoseSinkConnectorConfig.BATCH_SIZE_CONFIG, batchSize);
+    FirehoseSinkConnectorConfig config = new FirehoseSinkConnectorConfig(props);
+}
+</code></pre>
+<p>After deploying this latest update, if we repeat the curl request from above, we will see an error flagged for the <code>batchSize</code> value:</p>
+<?prettify?>
+<pre><code>{
+  &quot;definition&quot;: {
+    &quot;name&quot;: &quot;batchSize&quot;,
+    &quot;type&quot;: &quot;INT&quot;,
+    &quot;required&quot;: false,
+    &quot;default_value&quot;: &quot;500&quot;,
+    &quot;importance&quot;: &quot;HIGH&quot;,
+    &quot;documentation&quot;: &quot;Number of messages to be batched together. Firehose accepts at max 500 messages in one batch.&quot;,
+    &quot;group&quot;: &quot;AWS Configuration&quot;,
+    &quot;width&quot;: &quot;SHORT&quot;,
+    &quot;display_name&quot;: &quot;Maximum Number of Messages to Batch&quot;,
+    &quot;dependents&quot;: [],
+    &quot;order&quot;: 4
+  },
+  &quot;value&quot;: {
+    &quot;name&quot;: &quot;batchSize&quot;,
+    &quot;value&quot;: &quot;600&quot;,
+    &quot;recommended_values&quot;: [],
+    &quot;errors&quot;: [
+      &quot;Invalid value 600 for configuration batchSize: Value must be no more than 500&quot;
+    ],
+    &quot;visible&quot;: true
+  }
+}
+</code></pre>
+<h3>Configuration Validation in Standalone Mode</h3>
+<p>If you would rather try run Connect in standalone mode, you will still get error messages when you try to start with an invalid property file for your connector instance:</p>
+<?prettify?>
+<pre><code>./connect-standalone.sh ~/dev/kafka-connect/config/cluster_3/worker.properties ~/dev/kafka-connect/config/cluster_3/kinesis-firehose-kafka-connector.properties
+</code></pre>
+<p>Results in:</p>
+<?prettify?>
+<pre><code>[2019-08-25 12:01:55,483] ERROR Stopping after connector error (org.apache.kafka.connect.cli.ConnectStandalone:121)
+java.util.concurrent.ExecutionException: org.apache.kafka.connect.runtime.rest.errors.BadRequestException: Connector configuration is invalid and contains the following 1 error(s):
+Missing required configuration &quot;mappingFile&quot; which has no default value.
+You can also find the above list of errors at the endpoint `/{connectorType}/config/validate`
+    at org.apache.kafka.connect.util.ConvertingFutureCallback.result(ConvertingFutureCallback.java:79)
+</code></pre>
+<p>This is just scratching the surface of what can be done with Kafka Connect configurations and I'm hoping to explore it a bit more in the future, including the use of custom <code>Recommender</code> implementations.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

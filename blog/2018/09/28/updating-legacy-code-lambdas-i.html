@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Updating Legacy Code: Lambdas I</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Updating Legacy Code: Lambdas I
+		<div class="sub header">
+		28 September 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>Now that we've gone through and updated <code>carmix-creator</code> with all of the possible Java 7 updates, we can finally start looking at Java 8 and how we can make use of some of the constructs and other updates that Java 8 has to offer. For starters, we will see where we can make use of the biggest advancement to come to the language with the Java 8 release--lambda expressions.</p>
+<h2>What is a Lambda Expression</h2>
+<p>A lambda expression is a representation of an anonymous function comprised of a set of parameters, the lambda operator (-&gt;) and a function body, which is optionally surrounded by curly braces. Prior to Java 8, you might have used an anonymous class to handle this work, but lambda expressions help make your code less verbose and they can help make your intent more clear.</p>
+<!--more-->
+<p>Lambda expressions are converted into functional interfaces, an interface that contains only one abstract method among one or more default or static methods.</p>
+<p>While <code>carmix-creator</code> does not seem to make much use of code that would benefit from the use of lambdas, we can find a few places to update. For example:</p>
+<?prettify?>
+<pre><code>m3uFileSelectButton.setText(&quot;Select&quot;);
+m3uFileSelectButton.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        m3uFileSelectButtonActionPerformed(evt);
+    }
+});
+</code></pre>
+<p>Here, we are adding an <code>ActionListener</code> by creating an anonymous class. There are a couple of ways we could update this. But for the purpose of this post, we'll make use of lambda expressions since <code>ActionListener</code> is a functional interface.</p>
+<?prettify?>
+<pre><code>m3uFileSelectButton.setText(&quot;Select&quot;);
+m3uFileSelectButton.addActionListener(evt -&gt; m3uFileSelectButtonActionPerformed(evt));
+</code></pre>
+<p>Considering all that the <code>m3uFileSelectButtonActionPerformed</code> method does is call another method, we could further update the lambda in the following way:</p>
+<?prettify?>
+<pre><code>m3uFileSelectButton.setText(&quot;Select&quot;);
+m3uFileSelectButton.addActionListener(evt -&gt; selectPlaylistFile());
+</code></pre>
+<p>Now, if the <code>m3uFileSelectButtonActionPerformed</code> performed other work, we could still inline the method like so:</p>
+<?prettify?>
+<pre><code>m3uFileSelectButton.setText(&quot;Select&quot;);
+m3uFileSelectButton.addActionListener(evt -&gt; {
+    selectPlaylistFile();
+    //someOtherMethodCall();
+});
+</code></pre>
+<p>However, if the <code>m3uFileSelectButtonActionPerformed</code> method was doing a lot of work, I'd probably just leave it alone. Since it's currently only calling <code>selectPlaylistFile()</code>, I'll use that version and get rid of the extra method.</p>
+<p>We can make similar changes to all of the <code>addActionListener</code> calls.</p>
+<p>Since the other button action listeners are all calling a methods that in turn call another method, we'll remove the 'wrapper' methods from these listeners and put the method call directly in the lambda expression. Of course, we may need to do more with button presses in the future, but I'm trying to be better about not writing any extra code until <a href="https://blog.codinghorror.com/the-best-code-is-no-code-at-all/" rel="noopener" target="_blank">it's absolutely needed</a>.</p>
+<p>There is one other place we can make a change: in the <code>main</code> method.</p>
+<?prettify?>
+<pre><code>public static void main(String args[]) {
+    java.awt.EventQueue.invokeLater(new Runnable() {
+        public void run() {
+            new CarMixCreatorGUI().setVisible(true);
+        }
+    });
+}
+</code></pre>
+<p>We can replace the <code>Runnable</code> anonymous class with a lambda in the following manner:</p>
+<?prettify?>
+<pre><code>public static void main(String args[]) {
+    java.awt.EventQueue.invokeLater(() -&gt; new CarMixCreatorGUI().setVisible(true));
+}
+</code></pre>
+<p>This has been a very brief overview of Lambda expressions as I've only begun to scratch the surface with how they can help make your code less verbose. I'm hoping to have something a bit more in depth in the future. In the meantime, I recommend checking out <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/lambdaexpressions.html" rel="noopener" target="_blank">this tutorial</a> from Oracle, which shows how one can work toward making use of Lambda expressions.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

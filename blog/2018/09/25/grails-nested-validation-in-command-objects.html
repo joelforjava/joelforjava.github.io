@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Grails: Nested Validation in Command Objects</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Grails: Nested Validation in Command Objects
+		<div class="sub header">
+		25 September 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>If you've ever found yourself in need of validating nested Grails command objects, you've likely done something similar to the below snippet:</p>
+<?prettify?>
+<pre><code>static constraints = {
+	profile validator: { val, obj -&gt; val.validate() }
+}
+</code></pre>
+<p>This works well if you want to prevent someone from submitting a form without filling out the required profile data, however, the default error message leaves a lot to be desired.</p>
+<!--more-->
+<ul class="errors" style="color: #D8000C; background-color: #FFD2D2;">
+ 	<li>Property [profile] of class [class com.joelforjava.ripplr.UserRegisterCommand] with value [com.joelforjava.ripplr.ProfileRegisterCommand@1a247d8f] does not pass custom validation</li>
+</ul>
+<p>You can try something along the lines of a custom toString implementation for the nested command object, but you're still left with a messy looking error message and users are not going to try and decipher this.</p>
+<ul class="errors" style="color: #D8000C; background-color: #FFD2D2;">
+ 	<li>Property [profile] of class [class com.joelforjava.ripplr.UserRegisterCommand] with value [com.joelforjava.ripplr.ProfileRegisterCommand(mainPhoto:com.joelforjava.ripplr.ImageUploadCommand@2f29c2bd,
+coverPhoto:com.joelforjava.ripplr.ImageUploadCommand@6f5b2b54, fullName:null, about:null, homepage:null, email:null, twitterProfile:null, facebookProfile:null, timezone:America/New_York, country:null, skin:null)] does not pass custom validation</li>
+</ul>
+<p>Now it just looks like we've made the application extra, extra angry. Fortunately, there's a better way of handling this through a more sophisticated validation closure that takes three parameters, with the third parameter being the <code>org.springframework.validation.Errors</code> object. This gives us a lot more power to work with when handling how the nested object is validated and the accompanying error messages.</p>
+<p>When the nested command object fails validation, we can iterate through all of the errors on the object and pass them on to the errors object with a custom message key (for use with <code>messages.properties</code>) and pass the rest of the error information on to the errors object. We can also add a default error message if our message key is not found.</p>
+<?prettify?>
+<pre><code>static constraints = {
+	profile validator: { ProfileRegisterCommand val, UserRegisterCommand obj, Errors errors -&gt;
+		if (!val.validate()) {
+			val.errors.allErrors.each { err -&gt;
+				def fieldName = err.arguments ? err.arguments[0] : err.properties['field']
+				if (fieldName) {
+					String errorCode = &quot;profile.${err.code}&quot;
+					if (val.hasProperty(fieldName)) {
+						errorCode = &quot;profile.${err.arguments[0]}.${err.code}&quot;
+					}
+					errors.rejectValue(&quot;profile.${err.properties['field']}&quot;, errorCode, err.arguments, &quot;Invalid value for {0}&quot;)
+				}
+			}
+		}
+	}
+}
+</code></pre>
+<p>In this code, I have explicitly listed out the types for <code>val</code>, <code>obj</code>, and <code>errors</code>, but I typically leave them off. This new code will iterate through each error found on the <code>ProfileRegisterCommand</code> object, create a new error code, and then call <code>rejectValue</code> on the errors object.</p>
+<p>We have two possibilities for the error code. The first form is using <code>&quot;profile.${err.code}&quot;</code>, where err.code could be along the lines of <code>nullable</code>, <code>maxSize.exceeded</code>, or <code>email.invalid</code>. We check to see if the profile has a property named by the fieldName, which could be <code>fullName</code>, <code>email</code>, or <code>mainPhoto.photo</code>, etc. If the profile has a property with this name, then we update the error code to be <code>&quot;profile.${err.arguments[0]}.${err.code}&quot;</code> which becomes <code>profile.email.email.invalid</code> for an invalid email address value for the email property or <code>profile.fullName.nullable</code> for a null fullName value. Since <code>mainPhoto.photo</code> is not a property on <code>val</code>, the error code would remain <code>profile.mainPhoto.photo.maxSize.exceeded</code> in the case of the <code>mainPhoto.photo</code> exceeding the maxSize constraint.</p>
+<p>Now, when we submit the empty registration page, we see some new error messages:</p>
+<ul class="errors" style="color: #D8000C; background-color: #FFD2D2;">
+ 	<li>Invalid value for fullName</li>
+ 	<li>Invalid value for email</li>
+</ul>
+<p>These messages are based on the default error message we set in the call to <code>errors.rejectValue</code>. We can further customize the error messages via <code>messages.properties</code>. We take the newly created error code and use it to create a message, similar to the following.</p>
+<pre><code>profile.fullName.nullable=Please provide your name
+profile.email.nullable=Please provide your email address. We won't spam you!
+</code></pre>
+<p>And now we can see the new error messages:</p>
+<ul class="errors" style="color: #D8000C; background-color: #FFD2D2;">
+ 	<li>Please provide your name</li>
+ 	<li>Please provide your email address. We wont spam you!</li>
+</ul>
+<p>If your nested command objects have further nested command objects or any objects that require custom validation, you would continue with a pattern similar to this and add new messages to messages.properties in order for custom error messages to display when there are validation issues.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

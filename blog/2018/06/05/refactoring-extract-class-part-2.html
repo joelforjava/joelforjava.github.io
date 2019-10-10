@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Refactoring: Extract Class (Part 2)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Refactoring: Extract Class (Part 2)
+		<div class="sub header">
+		05 June 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>In a previous <a href="/blog/2018/05/29/refactoring-extract-class-part-1.html">post</a>, I began refactoring the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-collector</a> project. While its function is fairly simple, it had one class trying to do all the work which, among other things, makes the code terribly hard to test. In this post, I will be doing another refactoring that might take a minute to work out, but we will back up and try something new, if needed.</p>
+<p>I start by creating a new playlist processor class, <code>M3UPlaylistProcessor</code>. Its purpose will be to process the selected playlist file. Inside the new class, I create a new method, <code>process</code> that will contain the body of the existing <code>processPlaylistPath</code> method from the GUI class. I think naming the method <code>process</code> is a bit better than <code>processPlaylistPath</code> since the class name makes 'Playlist' redundant and the <code>Path</code> method parameter makes it clear we are processing a Path.</p>
+<p>If you try and compile this code (or are using an IDE), you'll notice an error: <code>Cannot resolve method 'processTrackURL'</code>. You'll probably also notice it doesn't recognize the Status enum either or the Strings used to denote the M3U header and info sections. Seems simple enough to just copy the processTrackURL method and other missing items from the GUI class and keep going.</p>
+<!--more-->
+<?prettify?>
+<pre><code>public class M3UPlaylistProcessor {
+
+    public Status process(Path path) {
+        List&lt;String&gt; lines;
+        try {
+            lines = Files.readAllLines(path, StandardCharsets.ISO_8859_1);
+            String firstLine = lines.remove(0);
+            if (!M3U_HEADER.equals(firstLine)) {
+                LOGGER.log(Level.WARNING, &quot;M3U Header Not Found. for file: &quot; + path.toString());
+                return Status.INVALID_HEADER; // preferably, throw error
+            }
+            LOGGER.log(Level.INFO, &quot;M3U Header Found&quot;);
+            for (String s : lines) {
+                if (StringUtils.isBlank(s)) {
+                    continue;
+                } else if (s.startsWith(M3U_INFO)) {
+                    continue;
+                    // processExtraInfo(s);
+                } else {
+                    processTrackURL(s);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Status.PROC_SUCCESSFULLY;
+
+    }
+
+    private void processTrackURL(String strLine) {
+        Path source = Paths.get(strLine);
+        if (Files.exists(source)) {
+            // do stuff
+            String albumName = &quot;&quot;;
+            String artistName = &quot;&quot;;
+            String fileName = source.getFileName().toString();
+            String newFileName = this.getStrDestDirectoryName() + fileName;
+            try {
+                if (usingArtistName) {
+                    MP3File mp3File = new MP3File(source.toFile(), false);
+                    ID3v1 tag = mp3File.getID3v1Tag();
+                    artistName = tag.getArtist();
+
+                    newFileName = this.getStrDestDirectoryName() + artistName + &quot;\\&quot; + fileName;
+                }
+                Path target = Paths.get(newFileName);
+                copyService.copy(source, target);
+                String strLogInfo = &quot;Copied: &quot; + strLine + &quot;\n to &quot; + newFileName;
+                setProgressInfoText(strLogInfo);
+                LOGGER.log(Level.INFO, strLogInfo);
+            } catch (TagException | IOException ex) {
+                // Display new error message
+                ex.getMessage();
+                LOGGER.log(Level.SEVERE, null, ex);
+            }
+        } else {
+            String strLogWarning = &quot;File not found! - &quot; + strLine;
+            LOGGER.log(Level.WARNING, strLogWarning);
+        }
+    }
+
+    private static final String M3U_HEADER = &quot;#EXTM3U&quot;;
+    private static final String M3U_INFO = &quot;#EXTINF&quot;;
+
+    private static final Logger LOGGER = Logger.getLogger(M3UPlaylistProcessor.class.getName());
+
+    public enum Status {
+        INVALID_HEADER,
+        PROC_SUCCESSFULLY
+    }
+
+}
+</code></pre>
+<p>However, I think I made things worse. While not immediately obvious above, I've inadvertently brought over other method calls and used fields specific to the GUI class, including that newly created copy service code. So, I remove the processTrackURL methods and leave the Strings and Status enum. What do I do next? I want to keep as much of this processing out of the main GUI class as possible, but it doesn't seem like I can do that without adding more parameters to the main process method, which doesn't seem right. And we don't want the copying to take place in this new class, it should let the GUI class control that service. And, the more I look at it, I realize it's trying to make calls to the GUI itself that handle the progress bar text. This approach won't work.</p>
+<p>Maybe instead of 'processing' the M3U file, I could extract the File URIs and send them back to the GUI class? At that point, each String could be sent to the <code>processTrackURL</code> method in the GUI class and it should all work again. So, I'll create a new <code>extractURIs</code> method that will collect all of the URIs as Strings and send them back. This is what we end up with:</p>
+<?prettify?>
+<pre><code>public List&lt;String&gt; extractURIs(Path path) {
+    List&lt;String&gt; extractedUris = new ArrayList&lt;&gt;();
+    try {
+        List&lt;String&gt; lines = Files.readAllLines(path, StandardCharsets.ISO_8859_1);
+        String firstLine = lines.remove(0);
+        if (!M3U_HEADER.equals(firstLine)) {
+            LOGGER.log(Level.WARNING, &quot;M3U Header Not Found. for file: &quot; + path.toString());
+            return Collections.emptyList();
+        }
+        LOGGER.log(Level.INFO, &quot;M3U Header Found&quot;);
+        for (String s : lines) {
+            if (StringUtils.isBlank(s)) {
+                continue;
+            } else if (s.startsWith(M3U_INFO)) {
+                continue;
+                // processExtraInfo(s);
+            } else {
+                extractedUris.add(s);
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return extractedUris;
+}
+</code></pre>
+<p>The main changes are we no longer send back a <code>Status</code>, but a List of <code>String</code>s that represent the file locations we wish to copy. The call to <code>processTrackURL</code> now adds a line to the list that will be returned.</p>
+<p>In the <code>CarMixCreatorGUI</code> class, I add the new <code>M3UPlaylistProcessor</code> class and make sure to initialize it in the constructor. The old <code>processPlaylistPath</code> then is changed to this:</p>
+<?prettify?>
+<pre><code>private Status processPlaylistPath(Path path) {
+    List&lt;String&gt; lines = playlistProcessor.extractURIs(path);
+    for (String line : lines) {
+        processTrackURL(line);
+    }
+    return Status.PROC_SUCCESSFULLY;
+}
+</code></pre>
+<p>We now have a new processing class that takes care of extracting the relevant data from a selected M3U playlist. Things ended up a bit differently than I initially expected they would, but I think the direction the code is headed is in the right one. There's still other areas I want to consider for refactoring, but for now, I'll leave it alone. As always, these changes are in the GitHub <a href="https://github.com/joelforjava/carmix-collector/tree/7e6abebd6f6ee61ffd0932852e669976a092c019">repo</a>.</p>
+<p>It appears the app still runs as expected, but it's hard to know for certain without tests to back it all up? Maybe I should get started on writing some tests. Until next time!</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

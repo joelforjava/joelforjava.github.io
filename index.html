@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>The Official Joel for Java Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="css/semantic.min.css" rel="stylesheet">
+    <link href="css/asciidoctor.css" rel="stylesheet">
+    <link href="css/base.css" rel="stylesheet">
+    <link href="css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui large top fixed menu transition hidden">
+        <div class="ui container">
+            <a class="header item" href="index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="feed.xml">RSS</a>
+            <a class="item" href="feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+
+
+	<div class="pusher">
+		<div class="ui inverted vertical masthead center aligned segment">
+			<div class="ui container">
+				<div class="ui large secondary inverted pointing menu">
+        <a class="item" href="index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="feed.xml">RSS</a>
+            <a class="item" href="feed.json">JSON Feed</a>
+          </div>
+        </div>
+				</div>
+			</div>
+			<div class="ui container">
+				<div class="item">
+					<div class="ui medium image">
+						<img src="/images/joelforjava-icon.jpeg">
+					</div>
+				</div>
+			</div>
+		</div>
+	<div class="ui main container">
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html"><h1 class="ui grey inverted header">Adding SSL Encryption Configuration to Kafka Connectors</h1></a>
+				<p>27 October 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>One thing you should always strive to do is to enable encryption, wherever possible, even if your systems are locked away behind layers and layers of firewalls and other security protocols. Even if your systems are not public facing and don't have a public IP address, you should at the very least encrypt your communications. For this article, we will explore how we enable a Kafka connector to communicate with an SSL-encrypted Kafka cluster.</p>
+</p>
+				<p><a href="blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html"><h1 class="ui grey inverted header">Adding Configuration Validation to the Kafka Kinesis Connector</h1></a>
+				<p>02 October 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>As it currently stands, you can easily feed invalid property values to the Kafka Kinesis Firehose Connector, such as a batch size of 1000, when the maximum batch size allowed by Firehose is only 500. Thankfully, Kafka Connect provides a mechanism to help with validating properties. The REST API provides a validate endpoint at <code>/connector-plugins/&lt;CONNECTOR_CLASS_NAME&gt;/config/validate</code>.</p>
+</p>
+				<p><a href="blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/09/28/my-kafka-connect-woes.html"><h1 class="ui grey inverted header">My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</h1></a>
+				<p>28 September 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>We have several 3-node Kafka connect clusters that each process different topics. If you’ve read my <a href="/blog/2019/09/22/customizing-kafka-kinesis-connector.html">first article</a> regarding my project's customized version of the AWS Labs Kafka-Kinesis Connector, you’ve already read about the corner we backed ourselves into with our first deployments of the modified code. We’ve been working, when possible, to fix those mistakes and to make updates to the clusters and their configurations easy. Well, at least easier than the abomination with which we started.</p>
+<p>During one of the updates to the code, updates that added additional properties and an additional configuration file, we ran into an issue with one of the clusters. We were attempting a rolling update of the Kafka-Kinesis Connector plugin and while it went smoothly for the first two clusters, it was a huge pain to get this particular cluster to update appropriately.</p>
+</p>
+				<p><a href="blog/2019/09/28/my-kafka-connect-woes.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/09/26/adding-more-to-kafka-kinesis-connector.html"><h1 class="ui grey inverted header">Adding Filtering to the Kafka Kinesis Connector</h1></a>
+				<p>26 September 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>In a <a href="/blog/2019/09/22/customizing-kafka-kinesis-connector.html">previous post</a>, we made modifications to the Kafka-Kinesis Connector that allowed us to use multiple topics and multiple destinations with a single connector task. This time, we’ll go a bit further and add more functionality to the connector. What if we later ended up with a requirement that some of the data going through a topic had to be filtered out into additional destination firehoses?</p>
+</p>
+				<p><a href="blog/2019/09/26/adding-more-to-kafka-kinesis-connector.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/09/22/customizing-kafka-kinesis-connector.html"><h1 class="ui grey inverted header">Customizing the Kafka Kinesis Connector</h1></a>
+				<p>22 September 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>Prior to the work that eventually led me to write this article, and the other Kafka-related ones that will follow, I had very little exposure to Kafka and its ecosystem. I knew, more-or-less, what Kafka was and could do the basics to get a broker started and then run producers and consumers from the command line. That was the extent of my working with Kafka until I inherited the maintaining and deployment of Kafka Connect clusters at work.</p>
+<p>These clusters all forward data to AWS Kinesis Firehoses, which then stream the data to Redshift, Splunk, Elasticsearch for Kibana dashbboards, or another Big Data store. The connector used by all of these clusters is a variation of this one from <a href="https://github.com/awslabs/kinesis-kafka-connector" title="Kinesis Kafka Connector by AWSLabs on Github">AWSLabs</a>.</p>
+<p>I say variation due to the fact that we had to modify it in order for it to suit our requirements. Rather than run one connector per topic/firehose combination, we needed it to take in multiple topics and then deliver to the related Kinesis Data Firehose. For each Kafka topic, there is at least one Kinesis Data Firehose. Due to time constraints, this ended up being a very painful process, and the evolution of that code is what will be explored here, at least as far as it can be.</p>
+</p>
+				<p><a href="blog/2019/09/22/customizing-kafka-kinesis-connector.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/09/15/migrating-from-wordpress-to-jbake.html"><h1 class="ui grey inverted header">Migrating joelforjava.com from WordPress to JBake</h1></a>
+				<p>15 September 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>When I started this site back in 2016, I went with <a href="http://wordpress.org">WordPress</a> because it was the quickest solution I could find to get things off the ground. However, as time has progressed, it has become clear that it's a bit overkill for my needs. I don't plan on ever having users sign up for accounts, for example. It's just me and the stuff I write. Could that change? Possibly, but not likely. Meanwhile, static site generators, such as <a href="http://gatsbyjs.org/">Gatsby</a>, <a href="http://www.sphinx-doc.org/">Sphinx</a>, <a href="http://jekyllrb.com/">Jekyll</a>, <a href="https://vuepress.vuejs.org/">VuePress</a>, and a trove of others have been gaining in popularity. That's when it hit me--all I really need is a basic static-type site.</p>
+<p>While I really wanted to go with something like VuePress or Gatsby so that I could sharpen my now archaic JavaScript skills, I decided to go with <a href="http://jbake.org/">JBake</a>. JBake has features that were more familiar to me, including <a href="http://freemarker.org/">Freemarker</a> and <a href="http://groovy-lang.org/">Groovy</a> based templates and even has a <a href="http://gradle.org/">Gradle</a> <a href="https://plugins.gradle.org/plugin/org.jbake.site">plugin</a> so that I could create a build script to help maintain the new version of the blog. Other offerings have similar features, but I've really missed working with Groovy and Gradle. These days, for better or worse, I'm mostly working with Python.</p>
+</p>
+				<p><a href="blog/2019/09/15/migrating-from-wordpress-to-jbake.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/04/08/the-burnout-is-real.html"><h1 class="ui grey inverted header">The Burnout is Real</h1></a>
+				<p>08 April 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>That's about the plainest way I can say it. If you feel yourself getting burned out, stop. Just stop. Between my job and my attempts at side projects, I ended up severely burned out. Honestly, I still don't feel like I've recovered, but I can't just stop working on the things I enjoy while my job has tried to move me away from Java.</p>
+<p>So, I may still be gone a while longer, but I'm going to try and get back into the swing of things and hopefully I'll be posting again soon. Starting small and just moving from there.</p>
+<p>Always take care of yourself.</p>
+</p>
+				<p><a href="blog/2019/04/08/the-burnout-is-real.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/09/28/updating-legacy-code-lambdas-i.html"><h1 class="ui grey inverted header">Updating Legacy Code: Lambdas I</h1></a>
+				<p>28 September 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>Now that we've gone through and updated <code>carmix-creator</code> with all of the possible Java 7 updates, we can finally start looking at Java 8 and how we can make use of some of the constructs and other updates that Java 8 has to offer. For starters, we will see where we can make use of the biggest advancement to come to the language with the Java 8 release--lambda expressions.</p>
+<h2>What is a Lambda Expression</h2>
+<p>A lambda expression is a representation of an anonymous function comprised of a set of parameters, the lambda operator (-&gt;) and a function body, which is optionally surrounded by curly braces. Prior to Java 8, you might have used an anonymous class to handle this work, but lambda expressions help make your code less verbose and they can help make your intent more clear.</p>
+</p>
+				<p><a href="blog/2018/09/28/updating-legacy-code-lambdas-i.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/09/25/grails-nested-validation-in-command-objects.html"><h1 class="ui grey inverted header">Grails: Nested Validation in Command Objects</h1></a>
+				<p>25 September 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>If you've ever found yourself in need of validating nested Grails command objects, you've likely done something similar to the below snippet:</p>
+<?prettify?>
+<pre><code>static constraints = {
+	profile validator: { val, obj -&gt; val.validate() }
+}
+</code></pre>
+<p>This works well if you want to prevent someone from submitting a form without filling out the required profile data, however, the default error message leaves a lot to be desired.</p>
+</p>
+				<p><a href="blog/2018/09/25/grails-nested-validation-in-command-objects.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/09/21/refactoring-replace-parameter-with-explicit-methods.html"><h1 class="ui grey inverted header">Refactoring: Replace Parameter With Explicit Methods</h1></a>
+				<p>21 September 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>As I continue to refactor and refine my <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-collector</a> project, I've come across a method that I really don't like. It looks too busy and depends on two separate parameters to determine what work should be done inside the method. Here's the method as it currently exists:</p>
+<?prettify?>
+<pre><code>private static boolean verifyFile(Path aPath, String indFileDir, String indReadWrite) throws IOException {
+    if (!Files.exists(aPath)) {
+        throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+    }
+
+    switch (indFileDir) {
+        case FILE_TYPE:
+            if (!Files.isRegularFile(aPath)) {
+                throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+            }
+            break;
+        case DIR_TYPE:
+            if (!Files.isDirectory(aPath)) {
+                throw new IOException(&quot;Directory Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+            }
+            break;
+    }
+
+    switch (indReadWrite) {
+        case READ_FILE:
+            if (!Files.isReadable(aPath)) {
+                throw new IOException(&quot;File Verification: Cannot read file &quot; + aPath.getFileName());
+            }
+            break;
+        case WRITE_FILE:
+            if (!Files.isWritable(aPath)) {
+                throw new IOException(&quot;File Verification: Cannot write to file &quot; + aPath.getFileName());
+            }
+            break;
+        }
+    return true;
+}
+</code></pre>
+<p>What we should do is create a new method for each possible parameter value. We should use the <a href="https://refactoring.com/catalog/replaceParameterWithExplicitMethods.html" rel="noopener" target="_blank">Replace Parameter With Explicit Methods</a> refactoring.</p>
+</p>
+				<p><a href="blog/2018/09/21/refactoring-replace-parameter-with-explicit-methods.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/08/17/updating-from-grails-test-mixin-framework.html"><h1 class="ui grey inverted header">Updating from Grails Test Mixin Framework to Grails Testing Support Framework</h1></a>
+				<p>17 August 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>In a <a href="/blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html">previous post</a>, I upgraded my Ripplr application, which was using Grails 3.1.9 to version 3.3.6. One of the changes that have come with Grails 3.3 is the new Grails Testing Support framework, which makes heavy use of Groovy traits as opposed to the previous Test Mixin framework, which relied heavily on annotations and AST transformations.</p>
+<p>Initially, I was not looking forward to updating test frameworks. However, during my first few refactorings, it has proven to be mostly worry free. For the most part, you're replacing Annotations with trait implementations. You may have to make some other small tweaks, but so far they have been quick to implement.</p>
+</p>
+				<p><a href="blog/2018/08/17/updating-from-grails-test-mixin-framework.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/08/10/testing-using-junit-rules-to-reduce-the-usage-of-mocking-frameworks.html"><h1 class="ui grey inverted header">Testing: Using JUnit Rule(s) to Reduce the Usage of Mocking Frameworks</h1></a>
+				<p>10 August 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>In a <a href="/blog/2018/07/09/unit-testing-with-mockito-and-powermock.html">previous post</a>, I wrote a unit test using JUnit 4.12 that unfortunately made use of what I believed to be unneeded uses of Mockito and PowerMockito. These tests were written with an earlier Junit 4 mindset, a mindset that was unaware of <a href="https://www.testwithspring.com/lesson/introduction-to-junit-4-rules/" rel="noopener" target="_blank">JUnit Rules</a>. Now that I've had some time to look around some, I'm going to rewrite the tests making use of the TemporaryFolder Rule.</p>
+<p>The <code>TemporaryFolder</code> rule allows us to create folders and files that are deleted after a test is completed. I realize this is something that I could have likely done without the Rule and even prior to my mocking, but using the Rule makes it far easier to work with and performs the cleanup seamlessly.</p>
+<p>All of the changes made are very similar and involve setting up a temporary file and writing to the file and then using it for the current test.</p>
+</p>
+				<p><a href="blog/2018/08/10/testing-using-junit-rules-to-reduce-the-usage-of-mocking-frameworks.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html"><h1 class="ui grey inverted header">Updating from Grails 3.1.9 to Grails 3.3.6</h1></a>
+				<p>16 July 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>I had intended to write an article on upgrading to Grails 3.3.5, but I ran into an <a href="https://github.com/grails/grails-core/issues/10993">issue</a> that prevented me from completing the upgrade. Luckily, this issue was fixed in the 3.3.6 release.</p>
+<p>I will walk through the steps I performed to upgrade my Grails 3.1.9 application, Ripplr to version 3.3.6. These steps will likely work for any 3.1.x to 3.3.x upgrade, but I have only successfully tested upgrading with this specific combination.</p>
+<p>Here are the steps I performed:</p>
+<ol>
+<li>Update build.gradle
+<ul>
+<li>Update GORM Version</li>
+<li>Update to Hibernate 5</li>
+<li>Add Grails test mixins dependency for tests that are now using a legacy framework</li>
+<li>Add new dependencies</li>
+<li>Update plugin versions, if at all possible\</li>
+</ul>
+</li>
+<li>Update application.yml and application.groovy</li>
+<li>Update resources.groovy</li>
+<li>Move Bootstrap.groovy and UrlMappings.groovy out of the default package</li>
+<li>Update Gradle Wrapper</li>
+<li>Add Grails wrapper</li>
+<li>Update Logging Configuration</li>
+<li>Fix broken unit tests (or Ignore them)</li>
+<li>Fix broken integration tests (or Ignore them)</li>
+<li>Verify CORS still works</li>
+<li>Fix Hibernate startup errors that occurred after updates</li>
+</ol>
+</p>
+				<p><a href="blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/07/09/testing-unit-testing-with-mockito-and-powermock.html"><h1 class="ui grey inverted header">Testing: Unit Testing with Mockito and Powermock</h1></a>
+				<p>09 July 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>Testing your code is an important step in the software development lifecycle and should be done as early as possible. Testing, in general, helps us catch mistakes and bugs in our code. I once worked on a project that had very little tests in place and the majority of those tests failed because your database is different from the test database. But, it also had some very important tests that would check Spring configurations and ensure everything was wired up correctly. These integration tests helped catch a lot of wiring issues quickly and helped us be more aware of how we updated the configurations as we updated the code. Tests, no matter if we're talking about unit, integration, functional, stress, or any other form of testing, help us find problems with the systems we write and gives us confidence that the code we write will work as expected.</p>
+</p>
+				<p><a href="blog/2018/07/09/testing-unit-testing-with-mockito-and-powermock.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/06/05/refactoring-extract-class-part-2.html"><h1 class="ui grey inverted header">Refactoring: Extract Class (Part 2)</h1></a>
+				<p>05 June 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>In a previous <a href="/blog/2018/05/29/refactoring-extract-class-part-1.html">post</a>, I began refactoring the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-collector</a> project. While its function is fairly simple, it had one class trying to do all the work which, among other things, makes the code terribly hard to test. In this post, I will be doing another refactoring that might take a minute to work out, but we will back up and try something new, if needed.</p>
+<p>I start by creating a new playlist processor class, <code>M3UPlaylistProcessor</code>. Its purpose will be to process the selected playlist file. Inside the new class, I create a new method, <code>process</code> that will contain the body of the existing <code>processPlaylistPath</code> method from the GUI class. I think naming the method <code>process</code> is a bit better than <code>processPlaylistPath</code> since the class name makes 'Playlist' redundant and the <code>Path</code> method parameter makes it clear we are processing a Path.</p>
+<p>If you try and compile this code (or are using an IDE), you'll notice an error: <code>Cannot resolve method 'processTrackURL'</code>. You'll probably also notice it doesn't recognize the Status enum either or the Strings used to denote the M3U header and info sections. Seems simple enough to just copy the processTrackURL method and other missing items from the GUI class and keep going.</p>
+</p>
+				<p><a href="blog/2018/06/05/refactoring-extract-class-part-2.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/05/29/refactoring-extract-class-part-1.html"><h1 class="ui grey inverted header">Refactoring: Extract Class (Part 1)</h1></a>
+				<p>29 May 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>Refactoring is an important step in the software development process. It should be practiced early and often to help maintain and improve code quality over time. Of course, we're all guilty of putting this off when deadlines and management expectations force us to choose between just having something working on time or improving upon your existing code while writing new functionality. If we're lucky, we're able to go back and refactor the code before the project is over, but it must be done with great care to ensure that we do not break any of the existing functionality. This is where it would be important to have an existing test suite to verify everything runs as expected before and after refactoring.</p>
+</p>
+				<p><a href="blog/2018/05/29/refactoring-extract-class-part-1.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/05/18/cors-for-grails-3-1-9.html"><h1 class="ui grey inverted header">CORS for Grails 3.1.9</h1></a>
+				<p>18 May 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>At my (now former) day job, I work on a monolithic java web application. CORS, cross-origin resource sharing, is not something that is a big concern for that application since, by default, a script can make a request to the same server from which it originates. However, modern web applications tend to have incoming connections from a variety of other applications, including mobile applications or a single page application running on a separate server. When working with these applications or with your own applications that need to connect to different servers, CORS is something that developers definitely need to keep in mind.</p>
+</p>
+				<p><a href="blog/2018/05/18/cors-for-grails-3-1-9.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/05/10/updating-legacy-code-part-iii-switch-with-strings.html"><h1 class="ui grey inverted header">Updating Legacy Code, Part III: Switch with Strings</h1></a>
+				<p>10 May 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>The past few posts have been going over some of the improvements that came with updating to Java 7. This article will showcase how to use strings in a switch statement using the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-creator</a> project.</p>
+<p>Prior to Java 7, you had to use constants of type <code>Byte</code>, <code>Character</code>, <code>Short</code>, <code>Integer</code> constants (or their primitive equivalents) or <code>enum</code>s as values for the cases in a <code>switch</code> statement. Personally, I think this is the way to go, but it isn't always possible and I'm glad they made the change. The majority of my past projects made minimal use of <code>enum</code> or <code>Integer</code>/<code>int</code> constants. They relied heavily on Strings, so this change would help make an endless sea of if statements look a little bit better. Even in my own code, I've only started to embrace enums, but it'll be a while before I get to writing about all that.</p>
+</p>
+				<p><a href="blog/2018/05/10/updating-legacy-code-part-iii-switch-with-strings.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/05/08/introducing-the-ripplr-projects.html"><h1 class="ui grey inverted header">Introdicing the Ripplr Projects</h1></a>
+				<p>08 May 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p><a href="https://github.com/joelforjava/ripplr-grails3">Ripplr</a> is a Twitter-like application that I originally developed as I followed along in the Grails in Action books from Manning Publications. It was originally written using Grails 2 and I updated it to use Grails 3.1.9 a while ago. It's not the prettiest looking site in the world, but it makes use of <a href="https://getbootstrap.com/docs/3.3/">Bootstrap 3.3</a>, some <a href="http://jquery.com/">jQuery</a>, and has basic follow &amp; blocking functionality, so it has a decent foundation with which to start. It's a bit messy all around, but I'm hoping to be able to use it for this blog a bit and clean it up along the way.</p>
+<p>There are a few Ripplr-related projects as well. There's an <a href="https://github.com/joelforjava/ripplr-angular-ui">Angular</a> user interface that I've written separately from the main application that I will use from time to time to help test out ideas. There is likely going to be a pure Java version of Ripplr as well. I have a few things I'd like to write about using Java web applications, so I could probably make use of Ripplr here.</p>
+<p>Feel free to check it out on GitHub and keep checking back regularly to see its progress.</p>
+</p>
+				<p><a href="blog/2018/05/08/introducing-the-ripplr-projects.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/05/03/updating-legacy-code-part-ii-nio-2.html"><h1 class="ui grey inverted header">Updating Legacy Code, Part II: NIO.2</h1></a>
+				<p>03 May 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>In a previous post, we updated legacy Java 5 code to use try-with-resources. In this post, we will be updating that same legacy code to use the new to Java 7 NIO.2 enhancements.</p>
+<p>Java's NIO.2 is a set of new classes and methods that predominantly live in the <code>java.nio</code> package. It is intended to be a replacement of <code>java.io.File</code> as the abstraction when dealing with code that reads or writes from a filesystem.</p>
+<p>The starting point for using NIO.2 is the <code>Path</code>. The <code>Path</code> class contains various methods for interacting with the path and extracting information about it. For the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-creator</a> application, we will replace all uses of the <code>File</code> class and replace them with <code>Path</code> and other new classes and methods from the <code>java.nio.file</code> package.</p>
+<p>Since carmix-creator copies files, it makes heavy use of several <code>File</code>-related classes. For starters, the <code>loadPlaylistFile</code> method can be refactored into a new method <code>loadPlaylistPath</code>.</p>
+</p>
+				<p><a href="blog/2018/05/03/updating-legacy-code-part-ii-nio-2.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/04/26/updating-legacy-code-part-i-try-with-resources.html"><h1 class="ui grey inverted header">Updating Legacy Code, Part I: Try with Resources</h1></a>
+				<p>26 April 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>So, Java 7 has been out for a quite a while now, but my corporate career had yet to expose me to anything newer than Java 6 at the time I originally wrote this. Even now, as of April 2018, I have yet to work with Java 8 in an enterprise setting. So, I took it upon myself at the time to learn some of the updates to the Java language in this version before starting to look at the changes in Java 8 (and now Java 9 and 10!).</p>
+<p>Java 7 brought several key improvements to the language. Some of these improvements I will be covering include:</p>
+<ul>
+<li>Try-with-resources</li>
+<li>New File IO (NIO.2)</li>
+<li>The ability to use strings in a switch statement</li>
+<li>The ability to handle multiple exceptions in one catch block</li>
+</ul>
+<p>For this article, we are highlighting try-with resources and how this change can be applied to pre-Java 7 code. To showcase these improvements, I will be using the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-creator</a>. It has several areas that are in dire need of the Java 7 improvements.</p>
+ </p>
+				<p><a href="blog/2018/04/26/updating-legacy-code-part-i-try-with-resources.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/04/19/introducing-the-carmix-collector-project.html"><h1 class="ui grey inverted header">Introducing the &apos;carmix-collector&apos; Project</h1></a>
+				<p>19 April 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>I will be using several projects of various sizes throughout my posts here. The first project I would like to introduce is one I've dubbed the 'carmix-collector'. It's a Java Swing application that was created using Netbeans and I wrote the original version of this code around 2006. The purpose of this application was to quickly copy songs from an MP3 Playlist (*.m3u) file so that they could be burned to a CD for use in my MP3-enabled car stereo. Needless to say, I haven't paid much attention to this code in years.</p>
+</p>
+				<p><a href="blog/2018/04/19/introducing-the-carmix-collector-project.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2018/04/11/giving-this-another-shot.html"><h1 class="ui grey inverted header">Giving This Another Try</h1></a>
+				<p>11 April 2018</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>For several years now, I have set out intending to start this blog all about Java and the surrounding ecosystem. I keep putting it off for one reason or another, ranging from feeling like I never enough time to fearing that I'm not good enough to keep up something like this.</p>
+<p>So, here I am fully intending to give this all a try. Again. I have so many things I’d like to write about, which brings up the question of where I should start writing. I suppose the best place for me to start is the beginning. I have several articles I wrote for myself back when Java 7 came out. Of course, we are now up to Java <del datetime="2018-04-11T02:41:04+00:00">9</del> 10, so these articles aren't as relevant as they may have been when I originally wrote them. I think I will keep the originals more or less intact. They deal with migrating code written using Java 5 and making use of new Java 7 constructs. I will take those changes and update the code to make use of Java 8, wherever possible and keep going to 9 and above to help keep up with the times.</p>
+<p>This code will also need a lot of work in regards to refactoring, which will all come after moving through the newer versions of Java.  I'll just go where the code takes me, I suppose.</p>
+<p>I also like working with Groovy, Grails, Scala, and plenty of other languages and frameworks within the Java world and I hope to have some articles around my experiences with them and more.</p>
+<p>Here’s to hoping I’ll keep things going this time around!</p>
+</p>
+				<p><a href="blog/2018/04/11/giving-this-another-shot.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
+				<a href="blog/2016/12/31/hello-world.html"><h1 class="ui grey inverted header">Hello World!</h1></a>
+				<p>31 December 2016</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>Hi everyone! My name is Joel and I have been a java developer for over 10 years now. Lately, I have become more and more interested with working with newer technologies and languages but find myself working on legacy software without a lot of chances to branch out into the expanded java world. Through this blog, I hope to explore newer technologies and help explain the baffling issues I come across along the way. I will also discuss the java language itself and explore topics that will hopefully be relevant to more than just myself.</p>
+<p>I look forward to posting new topics and ideas!</p>
+<p>Also, please excuse the mess as I continue configuring the site in a way I think looks best.</p>
+</p>
+				<p><a href="blog/2016/12/31/hello-world.html">Read more...</a></p>
+			</div>
+		  </div>
+	  </div>
+	</div>
+	
+	<hr />
+	
+	<p>Older posts are available in the <a href="archive.html">archive</a>.</p>
+
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/semantic.min.js"></script>
+    <script src="js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

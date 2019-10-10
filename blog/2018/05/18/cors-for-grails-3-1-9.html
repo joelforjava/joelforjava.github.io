@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>CORS for Grails 3.1.9</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		CORS for Grails 3.1.9
+		<div class="sub header">
+		18 May 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>At my (now former) day job, I work on a monolithic java web application. CORS, cross-origin resource sharing, is not something that is a big concern for that application since, by default, a script can make a request to the same server from which it originates. However, modern web applications tend to have incoming connections from a variety of other applications, including mobile applications or a single page application running on a separate server. When working with these applications or with your own applications that need to connect to different servers, CORS is something that developers definitely need to keep in mind.</p>
+<!--more-->
+<p>In my <a href="/blog/2018/05/08/introducing-ripplr.html">Ripplr</a> application, I have created a set of services that can be used by a mobile app, or maybe even a future third party application. For this demonstration, I will showcase how to set up CORS to allow incoming connections from an external Angular application.</p>
+<p>Here are the systems that will be used:</p>
+<ul>
+<li><a href="https://github.com/joelforjava/ripplr-grails3">Ripplr</a> (back end, built using Grails 3.1.9)</li>
+<li><a href="https://github.com/joelforjava/ripplr-angular-ui">Ripplr Angular UI</a> (Timeline Only - single page built using Angular 2)</li>
+</ul>
+<p>The Ripplr back end code is more or less your standard Grails application. I've based it heavily on the Hubub application that is a part of the <a href="https://www.manning.com/books/grails-in-action-second-edition">Grails in Action</a> book as Ripplr is the code I created as I followed along. This application has Spring Security enabled but I have opened up an endpoint to the global timeline for use in the Angular demo.</p>
+<p>While I have seen <a href="https://github.com/appcela/grails3-cors-interceptor-spring-security-rest-sample-app">several</a> <a href="https://stackoverflow.com/questions/29584164/how-to-enable-cors-in-grails-3-0-1">links</a> talking about how to get CORS working with Grails 3 and the Spring Security Plugin, I couldn't quite get them working right for myself. I decided to look for a different way to get CORS working with Grails 3, preferably without a Grails plugin.</p>
+<p>By default, CORS will deny everything that does not have the same Origin. Since the Ripplr backend is running on port <code>8080</code> and the Angular timeline UI is running on port <code>4200</code>, this means we have different origins. It isn't enough for them to both be on <code>localhost</code> (or any other host, for that matter). So, we will need to tell the Grails application that the Angular application is a trusted application.</p>
+<p>So, in order to enable this, I started my research at the top: <a href="http://docs.grails.org/3.1.9/guide/introduction.html#whatsNew31">The Grails 3.1.9 Guide</a>. There, it mentions that Grails 3.1 has been updated to Spring 4.2. I wasn't too familiar with all that came with Spring 4.2 consdiering my day job still dealt with Spring 2.5. I dove into the Spring Framework documentation and found <a href="https://docs.spring.io/spring/docs/4.2.9.RELEASE/spring-framework-reference/htmlsingle/#cors">this</a>. It states that as of Spring Framework 4.2, CORS is supported out of the box!</p>
+<p>So, it sounds like what I really need to try is leverage this new CORS support in the Spring Framework. I came across the <a href="https://docs.spring.io/spring-framework/docs/4.2.9.RELEASE/javadoc-api/org/springframework/web/filter/CorsFilter.html">CorsFilter</a> filter class and thought that would be something I could easily implement.</p>
+<p>This is the class I came up with:</p>
+<?prettify?>
+<pre><code>@CompileStatic
+class CustomCorsFilter extends org.springframework.web.filter.CorsFilter {
+
+    CustomCorsFilter() {
+        super(configurationSource())
+    }
+
+    private static UrlBasedCorsConfigurationSource configurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true)
+        config.addAllowedOrigin('http://localhost:4200')
+        ['origin', 'authorization', 'accept', 'content-type', 'x-requested-with'].each { header -&amp;gt;
+            config.addAllowedHeader(header)
+        }
+        ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'].each { method -&amp;gt;
+            config.addAllowedMethod(method)
+        }
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration('/**', config)
+        return source
+    }
+
+}
+</code></pre>
+<p>Notice the call to <code>config.addAllowedOrigin</code>. I've set it to allow only <code>localhost:4200</code>. You could add as many origins as you'd like, or even be bold and allow <code>'*'</code>, but I don't recommend it since you'll open up your system to the entire internet. Also notice how we added the major HTTP verbs to the allowed methods. You could narrow this down further, if desired. We can also dig deeper into the configuration, including setting the max-age of how long the response from a pre-flight request can be cached by clients, and even combine separate configurations into one. The <code>UrlBasedCorsConfigurationSource</code> class allows you to register several CORS configurations, if necessary, Here, we're just using a single <code>CorsConfiguration</code> object for the entire application.</p>
+<p>Once you do this, you will need to register the bean in your <code>resources.groovy</code></p>
+<?prettify?>
+<pre><code>beans = {
+
+    customCorsFilter(CustomCorsFilter)
+
+    corsFilter(FilterRegistrationBean) {
+        filter = customCorsFilter
+        order = 0
+    }
+
+}
+</code></pre>
+<p>Of course, by the time Grails 3.2.1 came around, it natively supported CORS via configuration in <code>application.yml</code>. I may come back around to this at some point in the future to make sure it's as easy as it seems once I update Ripplr to the latest Grails version. I hope reading this article has been as useful to you as writing it has been useful to me.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

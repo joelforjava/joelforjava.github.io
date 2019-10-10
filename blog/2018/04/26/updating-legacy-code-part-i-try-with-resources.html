@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Updating Legacy Code, Part I: Try with Resources</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Updating Legacy Code, Part I: Try with Resources
+		<div class="sub header">
+		26 April 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>So, Java 7 has been out for a quite a while now, but my corporate career had yet to expose me to anything newer than Java 6 at the time I originally wrote this. Even now, as of April 2018, I have yet to work with Java 8 in an enterprise setting. So, I took it upon myself at the time to learn some of the updates to the Java language in this version before starting to look at the changes in Java 8 (and now Java 9 and 10!).</p>
+<p>Java 7 brought several key improvements to the language. Some of these improvements I will be covering include:</p>
+<ul>
+<li>Try-with-resources</li>
+<li>New File IO (NIO.2)</li>
+<li>The ability to use strings in a switch statement</li>
+<li>The ability to handle multiple exceptions in one catch block</li>
+</ul>
+<p>For this article, we are highlighting try-with resources and how this change can be applied to pre-Java 7 code. To showcase these improvements, I will be using the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-creator</a>. It has several areas that are in dire need of the Java 7 improvements.</p>
+ <!--more-->
+<p>## First of all, what is &quot;try-with-resources&quot;? ##</p>
+<p>Try-with-resources (TWR) is a mechanism that allows for the automatic closing of resources used within a typical <code>try/catch/finally</code> block. Rather than initializing a variable in the following manner:</p>
+<?prettify?>
+<pre><code>// ...
+BufferedReader br = null;
+try {
+    br = new BufferedReader(new FileReader(file));
+    // ...
+} finally {
+    br.close();
+}
+// ...
+</code></pre>
+<p>You initialize the variable beside the declaration of the <code>try</code> block similar to below:</p>
+<?prettify?>
+<pre><code>// ...
+try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+    // ...
+}
+</code></pre>
+<h3>Example 1 - processPlaylistFile</h3>
+<p>For carmix-creator, there are a couple of places we can apply this. First, let's look at the <code>processPlaylistFile</code> method. It has a <code>try/catch/finally</code> block similar to the one above:</p>
+<?prettify?>
+<pre><code>private Status processPlaylistFile(File file) {
+    try {
+        BufferedReader input = new BufferedReader(new FileReader(file));
+        String strLogInfo = &quot;&quot;;
+
+        try {
+            String firstLine = input.readLine();
+            String nextLine = null;
+
+            // ... elided ...
+
+            boolean keepReading = true;
+            do {
+                nextLine = input.readLine();
+                if (nextLine == null) {
+                    keepReading = false;
+                } else if (&quot;&quot;.equals(nextLine)) {
+                    continue;
+                } else if (nextLine.startsWith(M3U_INFO)) {
+                    //processExtraInfo(nextLine);
+                } else { // This should be a File URL
+                    processTrackURL(nextLine);
+                }
+            } while (keepReading);
+        } finally {
+            input.close();
+        }
+    } catch (FileNotFoundException fnfe) {
+        fnfe.printStackTrace();
+    } catch (IOException ioe) {
+        ioe.printStackTrace();
+    }
+
+    return Status.PROC_SUCCESSFULLY;
+}
+</code></pre>
+<p>The inner <code>try/finally</code> in this code is exactly the thing TWR is meant to replace. While we're at it, let's refactor this to be a single <code>try/catch</code> block.</p>
+<p>Here is the updated version:</p>
+<?prettify?>
+<pre><code>private Status processPlaylistFile(File file) {
+    try(BufferedReader input = new BufferedReader(new FileReader(file))) {
+
+        String strLogInfo = &quot;&quot;;
+
+        String firstLine = input.readLine();
+        String nextLine = null;
+
+        // ... elided ...
+
+        boolean keepReading = true;
+        do {
+            nextLine = input.readLine();
+            if (nextLine == null) {
+                keepReading = false;
+            } else if (&quot;&quot;.equals(nextLine)) {
+                continue;
+            } else if (nextLine.startsWith(M3U_INFO)) {
+                //processExtraInfo(nextLine);
+            } else { // This should be a File URL
+                processTrackURL(nextLine);
+            }
+        } while (keepReading);
+
+    } catch (FileNotFoundException fnfe) {
+        fnfe.printStackTrace();
+    } catch (IOException ioe) {
+        ioe.printStackTrace();
+    }
+
+    return Status.PROC_SUCCESSFULLY;
+}
+</code></pre>
+<p>Notice that the <code>BufferedReader</code> resource is now declared inside parentheses beside the try keyword. I also removed the <code>finally</code> block since TWR will automatically close anything that is initialized in the <code>try</code>. This call to close will propagate to the inner <code>FileReader</code> and close it as well. Resources will be closed from the inside out.</p>
+<p>There is a minor issue with this solution, however. If the <code>BufferedReader</code> constructor throws an exception then the <code>FileReader</code> will not be closed. There are several <a href="https://stackoverflow.com/questions/12552863/correct-idiom-for-managing-multiple-chained-resources-in-try-with-resources-bloc">solutions</a> we could go with. However, I prefer to break out the <code>FileReader</code> into a separate variable in order to make try-with-resources aware of it. TWR will close the <code>FileReader</code> properly if there are any issues while calling the <code>BufferedReader</code> constructor. Resources will be closed in the opposite order in which they are listed.</p>
+<?prettify?>
+<pre><code>private Status processPlaylistFile(File file) {
+    try(FileReader fileReader = new FileReader(file);
+        BufferedReader input = new BufferedReader(fileReader)) {
+
+        // .. same as before ..
+
+    } catch (FileNotFoundException fnfe) {
+        fnfe.printStackTrace();
+    } catch (IOException ioe) {
+        ioe.printStackTrace();
+    }
+
+    return Status.PROC_SUCCESSFULLY;
+}
+</code></pre>
+<p>Whether or not this is actually an issue depends on the code itself and whether or not you expect the code to keep going when an exception is thrown. As the code currently is, all that is being done is printing the stack trace to the console and then we keep going. In this case, we will be better off with the separate <code>FileReader</code> variable.</p>
+<h3>Example 2 - copy</h3>
+<p>The copy method is another that could use a refresh to use TWR. Since we're copying, this time we are working with both an <code>InputStream</code> and an <code>OutputStream</code>:</p>
+<?prettify?>
+<pre><code>public static void copy(File inFile, File outFile) throws IOException {
+
+    // ... elided ...
+
+    InputStream in = null;
+    OutputStream out = null;
+
+    // ... elided ...
+
+    try {
+        in = new BufferedInputStream(new FileInputStream(inFile));
+        out = new BufferedOutputStream(new FileOutputStream(outFile));
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = in.read(buffer)) != -1){
+            out.write(buffer, 0, bytesRead);
+        } // write
+    } catch (IOException e) {
+        e.printStackTrace();
+    } finally {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (Exception e) {
+            }
+        }
+        if (out != null) {
+            try {
+                out.close();
+            } catch (Exception e) {
+            }
+        }
+    }
+}
+</code></pre>
+<p>And here is the the updated version:</p>
+<?prettify?>
+<pre><code>public static void copy(File inFile, File outFile) throws IOException {
+
+    // ... elided ...
+
+    try(FileInputStream fis = new FileInputStream(inFile);
+        FileOutputStream fos = new FileOutputStream(outFile);
+        InputStream in = new BufferedInputStream(fis);
+        OutputStream out = new BufferedOutputStream(fos)) {
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = in.read(buffer)) != -1){
+            out.write(buffer, 0, bytesRead);
+        } // write
+    } catch (IOException e) {
+    e.printStackTrace();
+    }
+}
+</code></pre>
+<p>I chose to break out the creation of each inner stream into a separate variable so that TWR will close them all correctly. As mentioned above, this isn't required but could be beneficial if any of the outer streams' constructors throw an exception.</p>
+<p>There is more to Try-with-resources than what we have seen here. We also have the presence of enhanced stack traces and suppressed exceptions. Prior to Java 7, exceptions may end up swallowed when handling resources. This is still possible with TWR, but now the stack traces have been enhanced to allow you to see these exceptions that would otherwise be lost.</p>
+<p>Java 7 also introduced the <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/AutoCloseable.html">AutoClosable</a> interface, which is now used by many Java built-in classes, including many listed here, to allow a class to be automatically closed by the try-with-resources construct. If you want to use your resource with try-with-resources, you'll need to implement this interface.</p>
+<p>I am a big fan of TWR and try to make use of it whenever it's needed. If at all possible, I think it's best to use it and avoid handling the closing resources manually.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

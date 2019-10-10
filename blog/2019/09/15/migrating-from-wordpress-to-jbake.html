@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Migrating joelforjava.com from WordPress to JBake</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Migrating joelforjava.com from WordPress to JBake
+		<div class="sub header">
+		15 September 2019
+
+		</div>
+	</h1>
+
+
+	<p><p>When I started this site back in 2016, I went with <a href="http://wordpress.org">WordPress</a> because it was the quickest solution I could find to get things off the ground. However, as time has progressed, it has become clear that it's a bit overkill for my needs. I don't plan on ever having users sign up for accounts, for example. It's just me and the stuff I write. Could that change? Possibly, but not likely. Meanwhile, static site generators, such as <a href="http://gatsbyjs.org/">Gatsby</a>, <a href="http://www.sphinx-doc.org/">Sphinx</a>, <a href="http://jekyllrb.com/">Jekyll</a>, <a href="https://vuepress.vuejs.org/">VuePress</a>, and a trove of others have been gaining in popularity. That's when it hit me--all I really need is a basic static-type site.</p>
+<p>While I really wanted to go with something like VuePress or Gatsby so that I could sharpen my now archaic JavaScript skills, I decided to go with <a href="http://jbake.org/">JBake</a>. JBake has features that were more familiar to me, including <a href="http://freemarker.org/">Freemarker</a> and <a href="http://groovy-lang.org/">Groovy</a> based templates and even has a <a href="http://gradle.org/">Gradle</a> <a href="https://plugins.gradle.org/plugin/org.jbake.site">plugin</a> so that I could create a build script to help maintain the new version of the blog. Other offerings have similar features, but I've really missed working with Groovy and Gradle. These days, for better or worse, I'm mostly working with Python.</p>
+<!--more-->
+<p>Since I didn't really have that many articles written over the years, it wasn't that much effort to copy everything over into new <a href="https://daringfireball.net/projects/markdown/">Markdown</a> files, which is what I plan on using for most of my articles. I could've probably written something to copy the data from WordPress, but I copied them manually since it might've taken me longer to write a script.</p>
+<p>So, here I am now. Everything copied over and I even have some new articles coming down the pipeline. Hopefully by the time you see this, I'll already have a new and improved layout.</p>
+<p>To help me keep tabs on the site, I've added a couple of Gradle tasks, including one to check for articles still in draft and another that validates all of the links to make sure we don't have any that are broken. They're a bit messy, but I'm hoping to improve them over time. I'm also hoping to add a spellchecker task to help keep misspellings to a minimum. You can check out everything <a href="https://github.com/joelforjava/joelforjava.com.src">here</a>.</p>
+<p>I used the <code>jbake</code> command to initialize my site using <code>jbake -i</code>, which generated the default Freemarker templates. You can change the templating engine used by running <code>jbake -i -t &lt;ENGINE&gt;</code>, where ENGINE is one of <code>freemarker</code>, <code>groovy</code>, <code>groovy-mte</code>, <code>thymeleaf</code>, or <code>jade</code>. If you've already set up a Gradle build script, you can update the <code>template</code> property of the <code>jbake</code> as follows:</p>
+<?prettify?>
+<pre><code>jbake {
+    template = 'ENGINE'
+}
+</code></pre>
+<p>Here, ENGINE is the same as for the jbake command. When initializing via Gradle, you'd run <code>gradle bakeInit</code>. Also, if you initialize a JBake site with Gradle and don't supply a template engine name, it will default to <code>groovy</code> instead of <code>freemarker</code>. When using Gradle, you can run the <code>bake</code> task to re-build your site and the <code>bakePreview</code> task to run in preview mode, similar to how <code>jbake -s</code> works. However, you'll need to run <code>gradle bake</code> each time you wish to update the deployed site. More information on the plugin and itse setup can be found on its <a href="https://github.com/jbake-org/jbake-gradle-plugin">GitHub page</a>.</p>
+<p>Building the site is only half the fun. If you want to host the site on something like <a href="https://pages.github.com">GitHub Pages</a>, you'll need to follow the steps there to set everything up. Once ready, you'd take the output from <code>build/jbake</code> and copy it to the root of your GitHub Pages repo. Regardless of what host you choose, you'll likely follow similar steps to upload your baked site for the world to see.</p>
+<p>Thank you for reading and I hope to somehow keep articles coming even when I'm not able to work with Java as much. Strangely, it seems like the more I'm pushed away from the Java ecosystem, the more I want to work in it. I might post some Python and other language stuff here, too, but that kind of gets away from the whole 'Joel for Java' thing, doesn't it?</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

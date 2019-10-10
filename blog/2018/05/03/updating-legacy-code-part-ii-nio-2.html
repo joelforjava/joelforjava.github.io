@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Updating Legacy Code, Part II: NIO.2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Updating Legacy Code, Part II: NIO.2
+		<div class="sub header">
+		03 May 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>In a previous post, we updated legacy Java 5 code to use try-with-resources. In this post, we will be updating that same legacy code to use the new to Java 7 NIO.2 enhancements.</p>
+<p>Java's NIO.2 is a set of new classes and methods that predominantly live in the <code>java.nio</code> package. It is intended to be a replacement of <code>java.io.File</code> as the abstraction when dealing with code that reads or writes from a filesystem.</p>
+<p>The starting point for using NIO.2 is the <code>Path</code>. The <code>Path</code> class contains various methods for interacting with the path and extracting information about it. For the <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-creator</a> application, we will replace all uses of the <code>File</code> class and replace them with <code>Path</code> and other new classes and methods from the <code>java.nio.file</code> package.</p>
+<p>Since carmix-creator copies files, it makes heavy use of several <code>File</code>-related classes. For starters, the <code>loadPlaylistFile</code> method can be refactored into a new method <code>loadPlaylistPath</code>.</p>
+<!--more-->
+<p>Here is the original. It simply creates a <code>File</code> object based on the strFilePath parameter.</p>
+<?prettify?>
+<pre><code>private File loadPlaylistFile(String strFilePath) {
+    File playlistFile = null;
+    if (strFilePath != null &amp;amp;&amp;amp; !strFilePath.equals(&quot;&quot;)) {
+        playlistFile = new File(strFilePath);
+    }
+
+    return playlistFile;
+}
+</code></pre>
+<p>This is the updated version. Here we've replaced the direct <code>File</code> object creation with a call to <code>Paths.get</code> to obtain a reference to the file path and that result is loaded into a <code>java.nio.file.Path</code> object.</p>
+<?prettify?>
+<pre><code>private Path loadPlaylistPath(String strPathName) {
+    Path playlistPath = null;
+    if (strPathName != null &amp;amp;&amp;amp; !strPathName.equals(&quot;&quot;)) {
+        playlistPath = Paths.get(strPathName);
+    }
+
+    return playlistPath;
+}
+</code></pre>
+<p>We next refactor <code>processPlaylistFile</code> into the new <code>processPlaylistPath</code> method. Here is how the method looked originally:</p>
+<?prettify?>
+<pre><code>private void processPlaylistFile(File filePlaylist) {
+
+    BufferedReader input = null;
+    try {
+        input = new BufferedReader(new FileReader(filePlaylist));
+        String firstLine = input.readLine();
+        String nextLine = null;
+        if (!M3U_HEADER.equals(firstLine)) {
+            return;
+        }
+        LOG.log(Level.INFO, &quot;Header Found&quot;);
+        boolean keepReading = true;
+        do {
+            nextLine = input.readLine();
+            if (nextLine == null) {
+                keepReading = false;
+            } else if (&quot;&quot;.equals(nextLine)) {
+                continue;
+            } else if (nextLine.startsWith(M3U_INFO)) {
+                continue;
+            } else { // This should be a File URL
+                processTrackURL(nextLine);
+            }
+        } while (keepReading);
+    } catch (FileNotFoundException fnfe) {
+        LOG.log(Level.SEVERE, null, fnfe);
+    } catch (IOException ioe) {
+        LOG.log(Level.SEVERE, null, ioe);
+    } finally {
+        try {
+            input.close();
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+}
+</code></pre>
+<p>The refactored method:</p>
+<?prettify?>
+<pre><code>private Status processPlaylistPath(Path path) {
+    try {
+        List&amp;lt;String&amp;gt; lines = Files.readAllLines(path, StandardCharsets.ISO_8859_1);
+        String firstLine = lines.remove(0);
+        if (!M3U_HEADER.equals(firstLine)) {
+            LOGGER.log(Level.WARNING, &quot;M3U Header Not Found. for file: &quot; + path.toString());
+            return Status.INVALID_HEADER;
+        }
+        LOGGER.log(Level.INFO, &quot;M3U Header Found&quot;);
+        for (String s : lines) {
+            if (StringUtils.isBlank(s)) {
+                continue;
+            } else if (s.startsWith(M3U_INFO)) {
+                continue;
+            } else {
+                processTrackURL(s);
+            }
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+    return Status.PROC_SUCCESSFULLY;
+
+}
+</code></pre>
+<p>We first replaced the <code>File</code> parameter with a <code>Path</code> parameter. Next, we read in the lines of the file represented by the <code>Path</code> using the new <code>Files.readAllLines</code> static method. This method also ensures the file is closed once the data is read or if there are any exceptions while the file is being read. We no longer have to read a file line by line using a <code>BufferedReader</code>!</p>
+<p>The <code>processTrackURL</code> method can replace the call to the private method copy to the new <code>Files.copy</code> method. We can also replace the <code>checkFileOrDirectoryExists</code> call with <code>Files.exists</code>.</p>
+<p>Original:</p>
+<?prettify?>
+<pre><code>private void processTrackURL(String strLine) {
+    if (checkFileOrDirectoryExists(strLine)) {
+        File inFile = new File(strLine);
+        String fileName = inFile.getName();
+        String newFileName = strMixDirectoryPath + fileName;
+        try {
+            if (usingArtistName) {
+                MP3File mp3File = new MP3File(source.toFile(), false);
+                ID3v1 tag = mp3File.getID3v1Tag();
+                artistName = tag.getArtist();
+
+                newFileName = this.getStrDestDirectoryName() + artistName + &quot;\\&quot; + fileName;
+            } else {
+                newFileName = this.getStrDestDirectoryName() + fileName;
+            }
+            File outFile = new File(newFileName);
+            copy(inFile, outFile);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        LOG.log(Level.INFO, &quot;File {0} located!&quot;, strLine);
+    } else {
+        LOG.log(Level.SEVERE, &quot;File {0} not found!&quot;, strLine);
+    }
+}
+</code></pre>
+<p>New:</p>
+<?prettify?>
+<pre><code>private void processTrackURL(String strLine) {
+    Path source = Paths.get(strLine);
+    if (Files.exists(source)) {
+        String artistName = &quot;&quot;;
+        String fileName = source.getFileName().toString();
+        String newFileName = strMixDirectoryPath + fileName;
+        try {
+            if (usingArtistName) {
+                MP3File mp3File = new MP3File(source.toFile(), false);
+                ID3v1 tag = mp3File.getID3v1Tag();
+                artistName = tag.getArtist();
+
+                newFileName = this.getStrDestDirectoryName() + artistName + &quot;\\&quot; + fileName;
+            }
+            Path target = Paths.get(newFileName);
+            Files.copy(source, target, COPY_ATTRIBUTES, REPLACE_EXISTING);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+        LOG.log(Level.INFO, &quot;File {0} located!&quot;, strLine);
+    } else {
+        LOG.log(Level.SEVERE, &quot;File {0} not found!&quot;, strLine);
+    }
+}
+</code></pre>
+<p>At a glance, it seems like we no longer need the private <code>copy</code> method. If you run the application and try copying without using the artist names, it will copy fine. However, when you select to have the files copied into folders by artist, then the copy fails due to a <code>java.nio.file.NoSuchFileException</code> on the target. Turns out, for the moment at least, we need the <code>copy</code> method after all since it took care of creating the artist folders. We can still make improvements to this private <code>copy</code> method, though.</p>
+<p>So, we revert the call to <code>Files.copy</code> back to the private method call, updated to take <code>Path</code>s instead of <code>File</code>s. Within this method, we will call <code>Files.copy</code>. We also make a few updates to make use of additional methods in the <code>Files</code> class.</p>
+<p>Before:</p>
+<?prettify?>
+<pre><code>public static void copy(File inFile, File outFile) throws IOException {
+
+    if (inFile.getCanonicalPath().equals(outFile.getCanonicalPath())) {
+        // inFile and outFile are the same;
+        // hence no copying is required.
+        LOGGER.log(Level.INFO, &quot;Files are the same, no copy performed&quot;);
+        return;
+    }
+
+    verifyFile(inFile, FILE_TYPE, READ_FILE);
+
+    if (outFile.isDirectory()) {
+        outFile = new File(outFile, inFile.getName());
+    }
+
+    if (outFile.exists()) {
+        if (!outFile.canWrite()) {
+            throw new IOException(&quot;Cannot write to: &quot; + outFile);
+        }
+        // This should become a prompt for the GUI
+        System.out.print(&quot;Overwrite existing file &quot; + outFile.getName() + &quot;? (Y/N): &quot;);
+        System.out.flush();
+        BufferedReader promptIn = new BufferedReader(new InputStreamReader(System.in));
+        String response = promptIn.readLine();
+        if (!response.toUpperCase().equals(&quot;Y&quot;)) {
+            throw new IOException(&quot;FileCopy: &quot; + &quot;existing file was not overwritten.&quot;);
+        }
+    } else {
+        File dirFile = outFile.getParentFile();
+
+        if (dirFile != null &amp;amp;&amp;amp; (!dirFile.exists())) {
+            if (!dirFile.mkdirs()) {
+                if(!dirFile.exists()) {
+                    throw new IOException(&quot;Cannot create directory: &quot; + dirFile);
+                }
+            }
+        }
+
+        // check for exists, isFile, canWrite
+        verifyFile(inFile, FILE_TYPE, WRITE_FILE);
+    }
+
+    try(FileInputStream fis = new FileInputStream(inFile);
+        FileOutputStream fos = new FileOutputStream(outFile);
+        InputStream in = new BufferedInputStream(fis);
+        OutputStream out = new BufferedOutputStream(fos)) {
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = in.read(buffer)) != -1){
+            out.write(buffer, 0, bytesRead);
+        } // write
+    }
+}
+</code></pre>
+<p>After:</p>
+<?prettify?>
+<pre><code>public static void copy(Path inPath, Path outPath) throws IOException {
+
+    if (Files.exists(outPath) &amp;amp;&amp;amp; Files.isSameFile(inPath, outPath)) {
+        LOGGER.log(Level.INFO, &quot;Files are the same, no copy performed&quot;);
+        return;
+    }
+
+    verifyFile(inPath, FILE_TYPE, READ_FILE);
+
+    if (Files.exists(outPath)) {
+        if (!Files.isWritable(outPath)) {
+            throw new IOException(&quot;Cannot write to: &quot; + outPath);
+        }
+    } else {
+        Path parentDirectory = outPath.getParent();
+        if (!Files.exists(parentDirectory)) {
+            Files.createDirectories(parentDirectory);
+        if (!Files.exists(parentDirectory)) {
+            throw new IOException(&quot;Cannot create directory: &quot; + parentDirectory);
+        }
+    }
+
+    // check for exists, isRegularFile, canWrite
+    verifyFile(inPath, FILE_TYPE, WRITE_FILE);
+    }
+    Files.copy(inPath, outPath, COPY_ATTRIBUTES, REPLACE_EXISTING);
+}
+</code></pre>
+<p>There is more work that could be done to this method, but I will leave that to future post(s) that discuss refactoring.</p>
+<p>Since we're making use of the copy method, we'll have to update the <code>verifyFile</code> method to take <code>Path</code>s instead of <code>File</code>s.</p>
+<p>Here's the method pre-<code>Path</code>:</p>
+<?prettify?>
+<pre><code>private static boolean verifyFile(File aFile, String indFileDir, String indReadWrite) throws IOException {
+    if (!aFile.exists()) {
+        throw new IOException(&quot;File Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+    }
+    if (FILE_TYPE.equals(indFileDir)) {
+        if (!aFile.isFile()) {
+            throw new IOException(&quot;File Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+        }
+    } else if (DIR_TYPE.equals(indFileDir)) {
+        if (!aFile.isDirectory()) {
+            throw new IOException(&quot;Directory Verification: &quot; + aFile.getPath() + &quot; does not exist&quot;);
+        }
+    }
+    if (READ_FILE.equals(indReadWrite)) {
+        if (!aFile.canRead()) {
+            throw new IOException(&quot;File Verification: Cannot read file &quot; + aFile.getPath());
+        }
+    } else if (WRITE_FILE.equals(indReadWrite)){
+        if (!aFile.canWrite()) {
+            throw new IOException(&quot;File Verification: Cannot write to file &quot; + aFile.getPath());
+        }
+    }
+    return false;
+}
+</code></pre>
+<p>And here it is refactored to use the Path and Files classes:</p>
+<?prettify?>
+<pre><code>private static boolean verifyFile(Path aPath, String indFileDir, String indReadWrite) throws IOException {
+    if (!Files.exists(aPath)) {
+        throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+    }
+    if (FILE_TYPE.equals(indFileDir)) {
+        if (!Files.isRegularFile(aPath)) {
+            throw new IOException(&quot;File Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+        }
+    } else if (DIR_TYPE.equals(indFileDir)) {
+        if (!Files.isDirectory(aPath)) {
+            throw new IOException(&quot;Directory Verification: &quot; + aPath.getFileName() + &quot; does not exist&quot;);
+        }
+    }
+    if (READ_FILE.equals(indReadWrite)) {
+        if (!Files.isReadable(aPath)) {
+            throw new IOException(&quot;File Verification: Cannot read file &quot; + aPath.getFileName());
+        }
+    } else if (WRITE_FILE.equals(indReadWrite)){
+        if (!Files.isWritable()) {
+            throw new IOException(&quot;File Verification: Cannot write to file &quot; + aPath.getFileName());
+        }
+    }
+    return true;
+}
+</code></pre>
+<p>The updated verifyFile method helps to show how you check file properties when working with <code>Path</code>s. The <code>Files</code> class has many static methods that can be used, including checking for the existence of a file or checking whether or not a file can be read or written to. Many more methods live in this class to help you work with files.</p>
+<p>And this should wrap up updating the carmix-creator to use Java 7 NIO.2, where applicable to the application. There is far more to NIO.2 than has been shown here and I urge you to all go give it a try if you haven't already. NIO.2 changes don't stop here. Thanks to the Streams API in Java 8, there will be new things to try with that as well.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>

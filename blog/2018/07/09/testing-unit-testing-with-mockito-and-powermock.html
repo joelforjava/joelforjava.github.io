@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Testing: Unit Testing with Mockito and Powermock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Testing: Unit Testing with Mockito and Powermock
+		<div class="sub header">
+		09 July 2018
+
+		</div>
+	</h1>
+
+
+	<p><p>Testing your code is an important step in the software development lifecycle and should be done as early as possible. Testing, in general, helps us catch mistakes and bugs in our code. I once worked on a project that had very little tests in place and the majority of those tests failed because your database is different from the test database. But, it also had some very important tests that would check Spring configurations and ensure everything was wired up correctly. These integration tests helped catch a lot of wiring issues quickly and helped us be more aware of how we updated the configurations as we updated the code. Tests, no matter if we're talking about unit, integration, functional, stress, or any other form of testing, help us find problems with the systems we write and gives us confidence that the code we write will work as expected.</p>
+<!--more-->
+<p>Now that <code>carmix-creator</code> has been <a href="/blog/2018/06/05/refactoring-extract-class-part-2.html">refactored</a> a bit, it's time to finally start adding some tests to make sure it all works the way it is expected to work.</p>
+<p>There are at least three main types of tests that should be performed before a project or release goes live: unit tests, integration tests, and functional tests.<span id="read-more-1"></span> For now, we will focus on unit testing and work toward integration tests in a future post.</p>
+<p>Unit testing is the practice of testing a single piece of code, usually a single class (in object-oriented programming) or a single function (in the case of functional programming), in isolation from external dependencies, including databases and external services. These external dependencies are mocked or stubbed to return expected outputs.</p>
+<p>Unit tests are the first tests one should write when developing code and they should run quickly and produce repeatable results.</p>
+<p>For the current iteration of the <code>carmix-creator</code> project, the classes that should be unit tested are <code>M3UPlaylistProcessor</code> and <code>CopyFileService</code>. Unfortunately, in the case of these classes, we have to go a bit further with mocking and mock some static methods.</p>
+<p>There are many frameworks which be used when testing Java applications, including <a href="https://junit.org/">JUnit</a>, <a href="https://testng.org">TestNG</a>, <a href="http://spockframework.org/">Spock</a>, and <a href="http://www.scalatest.org/">ScalaTest</a>. We can go further and include mocking frameworks, such as <a href="http://site.mockito.org/">Mockito</a>, <a href="http://easymock.org/">EasyMock</a>, and <a href="http://jmock.org/">jMock</a>. For purposes of this post, I will be going with JUnit 4.12 for the simple reason that it was automatically added when I set up the Maven POM file. In addition, I will use Mockito and <a href="http://powermock.github.io/">PowerMock</a> to aid in mocking. PowerMock adds additional functionality to existing mocking frameworks, such as Mockito and EasyMock, including the ability to mock static methods.</p>
+<p>I usually don't like having to depend on Powermock, but sometimes it's a necessary evil such as the case with the playlist processor, since we want to mock <code>Files.readAllLines</code>. I would rather mock the <code>Path</code> class to return the expected lines when read, but <code>Path</code> is used to locate a file on the system and doesn't represent data within the referenced file. So, we'll need to mock <code>Files.readAllLines</code> to return the expected output in the form of different <code>List&lt;string&gt;&lt;/string&gt;</code>s based on what we want to test. In this case, we want to test that the File URIs are extracted from the returned list.</p>
+<p>We can start with a simple test, one that does not require any mocks to be set up. We'll see what happens when we pass a <code>null Path</code> to the extractURIs method.</p>
+<?prettify?>
+<pre><code>@Test(expected = NullPointerException.class)
+public void testWithNullPath() {
+    M3UPlaylistProcessor processor = new M3UPlaylistProcessor();
+    processor.extractURIs(null);
+}
+</code></pre>
+<p>Since <code>extractURIs</code> does no checking on the <code>Path</code> parameter it receives, we end up with a <code>NullPointerException</code> thrown from the <code>Files.readAllLines</code> method call. Even though we 'know' how this method is called from the context of the GUI and that checks are performed before the call being made, we should still probably do a check on the parameter and act accordingly when the parameter is <code>null</code>. If I were practicing TDD at this moment, I'd update the code to handle this scenario, but for now I'll leave it alone.</p>
+<p>There are a couple different ways we could handle the expected <code>NullPointerException</code>. The way you see above is the form I have used in the past with earlier versions of JUnit 4. However, in JUnit 4.7, they introduced the concept of Rules. Using Rules, we can rewrite the test the following way:</p>
+<?prettify?>
+<pre><code>// ... top of class
+@Rule
+public final ExpectedException expectedException = ExpectedException.none();
+
+// ... Other code
+
+@Test
+public void testWithNullPath() {
+    M3UPlaylistProcessor processor = new M3UPlaylistProcessor();
+    expectedException.expect(NullPointerException.class);
+    processor.extractURIs(null);
+}
+</code></pre>
+<p>A JUnit rule intercepts method calls and allows us to handle a scenario both before a test method is run and after a test method has run. In this case, the <code>ExpectedException</code> rule will help us handle expectations for the thrown <code>NullPointerException</code>. I honestly just learned about rules while writing this post, so I'm looking forward into digging deeper.</p>
+<p>A typical unit test method makes assertions about return values, however, since the previous test method was simply testing for the expected <code>NullPointerException</code>, there were no need for assertions.</p>
+<p>So, we've tested with a null path, let's now try testing a file that has a single valid entry. For this test, we need to mock what <code>Files.readAllLines</code> returns since the <code>List</code> returned from this method is the list that will be processed for URI values. As I stated previously, I don't particularly like having to mock static methods, but in this case it's a necessary evil for the way the code is currently structured.</p>
+<?prettify?>
+<pre><code>@Test
+public void testWithSingleEntry() throws Exception {
+    Path p = Paths.get(&quot;Test&quot;);
+
+    List&lt;String&gt; lines = new ArrayList&lt;String&gt;() {{
+        add(&quot;#EXTM3U&quot;);
+        add(&quot;#EXTINF A Great Band - That Song You Remember&quot;);
+        add(&quot;M:\\Temp\\File.mp3&quot;);
+    }};
+    PowerMockito.mockStatic(Files.class);
+    Mockito.when(Files.readAllLines(p, StandardCharsets.ISO_8859_1)).thenReturn(lines);
+
+    M3UPlaylistProcessor processor = new M3UPlaylistProcessor();
+    List&lt;String&gt; extracted = processor.extractURIs(p);
+
+    Assert.assertEquals(extracted.size(), 1);
+}
+</code></pre>
+<p>You should notice that we didn't need to mock the <code>Path</code> variable, although we could have done so. A path is just a locator to a file and since we're mocking the method that would make use of it, then there are no benefits to mocking it. The only mocking required is concerning the static method call. This method call was mocked to return an expected list, which contains the M3U Header, M3U File Information, and the File URI.</p>
+<p>In order to run this test, we will need to annotate the class with the following annotations: <code>@PrepareForTest(M3UPlaylistProcessor.class)</code> and <code>@RunWith(PowerMockRunner.class)</code>. This allows Powermock to perform the extra work involved in order to mock the static method(s) we use.</p>
+<p>Now, I can just add some variations of the previous test to see how the class under test handles the different data. For example, I can see what happens if I leave out the <code>#EXTINF</code> lines or if I have a file without an expected M3U header.</p>
+<?prettify?>
+<pre><code>@Test
+public void testWithNoInfoEntries() throws Exception {
+    Path p = Mockito.mock(Path.class);
+
+    List&lt;String&gt; lines = new ArrayList&lt;&gt;() {{
+        add(&quot;#EXTM3U&quot;);
+        add(&quot;M:\\Temp\\File.mp3&quot;);
+        add(&quot;M:\\Temp\\File2.mp3&quot;);
+        add(&quot;M:\\Temp\\File3.mp3&quot;);
+    }};
+
+    PowerMockito.mockStatic(Files.class);
+    Mockito.when(Files.readAllLines(p, StandardCharsets.ISO_8859_1)).thenReturn(lines);
+
+    M3UPlaylistProcessor processor = new M3UPlaylistProcessor();
+    List&lt;String&gt; extracted = processor.extractURIs(p);
+
+    Assert.assertEquals(3, extracted.size());
+}
+</code></pre>
+<p>You should notice that this test looks a lot like the previous one, except we've changed the mocked return list and we're expecting 3 URIs extracted from this list.</p>
+<p>This has been a fairly brief overview of how to write JUnit tests with Mockito and Powermock. I'm hoping to go back over them in the near future and update them where possible, hopefully refactoring out my dependence on Powermock. For now, I'm content with having some tests in place and will see where I can make more improvements throughout the codebase.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>
