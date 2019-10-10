@@ -1,0 +1,436 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JBake</title>
+    <link>https://joelforjava.com</link>
+    <atom:link href="https://joelforjava.com/feed.xml" rel="self" type="application/rss+xml" />
+    <description>JBake Bootstrap Template</description>
+    <language>en-gb</language>
+    <pubDate>Thu, 10 Oct 2019 17:10:05 -0400</pubDate>
+    <lastBuildDate>Thu, 10 Oct 2019 17:10:05 -0400</lastBuildDate>
+
+    <item>
+      <title>Adding Configuration Validation to the Kafka Kinesis Connector</title>
+      <link>https://joelforjava.com/blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html</link>
+      <pubDate>Wed, 2 Oct 2019 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html</guid>
+      	<description>
+	&lt;p&gt;As it currently stands, you can easily feed invalid property values to the Kafka Kinesis Firehose Connector, such as a batch size of 1000, when the maximum batch size allowed by Firehose is only 500. Thankfully, Kafka Connect provides a mechanism to help with validating properties. The REST API provides a validate endpoint at &lt;code&gt;/connector-plugins/&amp;lt;CONNECTOR_CLASS_NAME&amp;gt;/config/validate&lt;/code&gt;.&lt;/p&gt;
+
+	</description>
+      <category>kafka</category>
+      <category>kinesis</category>
+      <category>kafka connect</category>
+      <category>java</category>
+    </item>
+    <item>
+      <title>My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</title>
+      <link>https://joelforjava.com/blog/2019/09/28/my-kafka-connect-woes.html</link>
+      <pubDate>Sat, 28 Sep 2019 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2019/09/28/my-kafka-connect-woes.html</guid>
+      	<description>
+	&lt;p&gt;We have several 3-node Kafka connect clusters that each process different topics. If you’ve read my &lt;a href=&quot;/blog/2019/09/22/customizing-kafka-kinesis-connector.html&quot;&gt;first article&lt;/a&gt; regarding my project&apos;s customized version of the AWS Labs Kafka-Kinesis Connector, you’ve already read about the corner we backed ourselves into with our first deployments of the modified code. We’ve been working, when possible, to fix those mistakes and to make updates to the clusters and their configurations easy. Well, at least easier than the abomination with which we started.&lt;/p&gt;
+&lt;p&gt;During one of the updates to the code, updates that added additional properties and an additional configuration file, we ran into an issue with one of the clusters. We were attempting a rolling update of the Kafka-Kinesis Connector plugin and while it went smoothly for the first two clusters, it was a huge pain to get this particular cluster to update appropriately.&lt;/p&gt;
+
+	</description>
+      <category>kafka</category>
+      <category>kinesis</category>
+      <category>kafka connect</category>
+      <category>java</category>
+    </item>
+    <item>
+      <title>Adding Filtering to the Kafka Kinesis Connector</title>
+      <link>https://joelforjava.com/blog/2019/09/26/adding-more-to-kafka-kinesis-connector.html</link>
+      <pubDate>Thu, 26 Sep 2019 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2019/09/26/adding-more-to-kafka-kinesis-connector.html</guid>
+      	<description>
+	&lt;p&gt;In a &lt;a href=&quot;/blog/2019/09/22/customizing-kafka-kinesis-connector.html&quot;&gt;previous post&lt;/a&gt;, we made modifications to the Kafka-Kinesis Connector that allowed us to use multiple topics and multiple destinations with a single connector task. This time, we’ll go a bit further and add more functionality to the connector. What if we later ended up with a requirement that some of the data going through a topic had to be filtered out into additional destination firehoses?&lt;/p&gt;
+
+	</description>
+      <category>kafka</category>
+      <category>kinesis</category>
+      <category>aws</category>
+      <category>kafka connect</category>
+      <category>java</category>
+    </item>
+    <item>
+      <title>Customizing the Kafka Kinesis Connector</title>
+      <link>https://joelforjava.com/blog/2019/09/22/customizing-kafka-kinesis-connector.html</link>
+      <pubDate>Sun, 22 Sep 2019 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2019/09/22/customizing-kafka-kinesis-connector.html</guid>
+      	<description>
+	&lt;p&gt;Prior to the work that eventually led me to write this article, and the other Kafka-related ones that will follow, I had very little exposure to Kafka and its ecosystem. I knew, more-or-less, what Kafka was and could do the basics to get a broker started and then run producers and consumers from the command line. That was the extent of my working with Kafka until I inherited the maintaining and deployment of Kafka Connect clusters at work.&lt;/p&gt;
+&lt;p&gt;These clusters all forward data to AWS Kinesis Firehoses, which then stream the data to Redshift, Splunk, Elasticsearch for Kibana dashbboards, or another Big Data store. The connector used by all of these clusters is a variation of this one from &lt;a href=&quot;https://github.com/awslabs/kinesis-kafka-connector&quot; title=&quot;Kinesis Kafka Connector by AWSLabs on Github&quot;&gt;AWSLabs&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I say variation due to the fact that we had to modify it in order for it to suit our requirements. Rather than run one connector per topic/firehose combination, we needed it to take in multiple topics and then deliver to the related Kinesis Data Firehose. For each Kafka topic, there is at least one Kinesis Data Firehose. Due to time constraints, this ended up being a very painful process, and the evolution of that code is what will be explored here, at least as far as it can be.&lt;/p&gt;
+
+	</description>
+      <category>kafka</category>
+      <category>kinesis</category>
+      <category>aws</category>
+      <category>kafka connect</category>
+      <category>java</category>
+    </item>
+    <item>
+      <title>Migrating joelforjava.com from WordPress to JBake</title>
+      <link>https://joelforjava.com/blog/2019/09/15/migrating-from-wordpress-to-jbake.html</link>
+      <pubDate>Sun, 15 Sep 2019 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2019/09/15/migrating-from-wordpress-to-jbake.html</guid>
+      	<description>
+	&lt;p&gt;When I started this site back in 2016, I went with &lt;a href=&quot;http://wordpress.org&quot;&gt;WordPress&lt;/a&gt; because it was the quickest solution I could find to get things off the ground. However, as time has progressed, it has become clear that it&apos;s a bit overkill for my needs. I don&apos;t plan on ever having users sign up for accounts, for example. It&apos;s just me and the stuff I write. Could that change? Possibly, but not likely. Meanwhile, static site generators, such as &lt;a href=&quot;http://gatsbyjs.org/&quot;&gt;Gatsby&lt;/a&gt;, &lt;a href=&quot;http://www.sphinx-doc.org/&quot;&gt;Sphinx&lt;/a&gt;, &lt;a href=&quot;http://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt;, &lt;a href=&quot;https://vuepress.vuejs.org/&quot;&gt;VuePress&lt;/a&gt;, and a trove of others have been gaining in popularity. That&apos;s when it hit me--all I really need is a basic static-type site.&lt;/p&gt;
+&lt;p&gt;While I really wanted to go with something like VuePress or Gatsby so that I could sharpen my now archaic JavaScript skills, I decided to go with &lt;a href=&quot;http://jbake.org/&quot;&gt;JBake&lt;/a&gt;. JBake has features that were more familiar to me, including &lt;a href=&quot;http://freemarker.org/&quot;&gt;Freemarker&lt;/a&gt; and &lt;a href=&quot;http://groovy-lang.org/&quot;&gt;Groovy&lt;/a&gt; based templates and even has a &lt;a href=&quot;http://gradle.org/&quot;&gt;Gradle&lt;/a&gt; &lt;a href=&quot;https://plugins.gradle.org/plugin/org.jbake.site&quot;&gt;plugin&lt;/a&gt; so that I could create a build script to help maintain the new version of the blog. Other offerings have similar features, but I&apos;ve really missed working with Groovy and Gradle. These days, for better or worse, I&apos;m mostly working with Python.&lt;/p&gt;
+
+	</description>
+      <category>general</category>
+      <category>wordpress</category>
+      <category>static site generators</category>
+      <category>jbake</category>
+      <category>freemarker</category>
+      <category>groovy</category>
+      <category>thymeleaf</category>
+      <category>jade</category>
+      <category>blogging</category>
+    </item>
+    <item>
+      <title>The Burnout is Real</title>
+      <link>https://joelforjava.com/blog/2019/04/08/the-burnout-is-real.html</link>
+      <pubDate>Mon, 8 Apr 2019 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2019/04/08/the-burnout-is-real.html</guid>
+      	<description>
+	&lt;p&gt;That&apos;s about the plainest way I can say it. If you feel yourself getting burned out, stop. Just stop. Between my job and my attempts at side projects, I ended up severely burned out. Honestly, I still don&apos;t feel like I&apos;ve recovered, but I can&apos;t just stop working on the things I enjoy while my job has tried to move me away from Java.&lt;/p&gt;
+&lt;p&gt;So, I may still be gone a while longer, but I&apos;m going to try and get back into the swing of things and hopefully I&apos;ll be posting again soon. Starting small and just moving from there.&lt;/p&gt;
+&lt;p&gt;Always take care of yourself.&lt;/p&gt;
+
+	</description>
+      <category>personal</category>
+    </item>
+    <item>
+      <title>Updating Legacy Code: Lambdas I</title>
+      <link>https://joelforjava.com/blog/2018/09/28/updating-legacy-code-lambdas-i.html</link>
+      <pubDate>Fri, 28 Sep 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/09/28/updating-legacy-code-lambdas-i.html</guid>
+      	<description>
+	&lt;p&gt;Now that we&apos;ve gone through and updated &lt;code&gt;carmix-creator&lt;/code&gt; with all of the possible Java 7 updates, we can finally start looking at Java 8 and how we can make use of some of the constructs and other updates that Java 8 has to offer. For starters, we will see where we can make use of the biggest advancement to come to the language with the Java 8 release--lambda expressions.&lt;/p&gt;
+&lt;h2&gt;What is a Lambda Expression&lt;/h2&gt;
+&lt;p&gt;A lambda expression is a representation of an anonymous function comprised of a set of parameters, the lambda operator (-&amp;gt;) and a function body, which is optionally surrounded by curly braces. Prior to Java 8, you might have used an anonymous class to handle this work, but lambda expressions help make your code less verbose and they can help make your intent more clear.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>java8</category>
+      <category>legacy</category>
+      <category>carmix-creator</category>
+    </item>
+    <item>
+      <title>Grails: Nested Validation in Command Objects</title>
+      <link>https://joelforjava.com/blog/2018/09/25/grails-nested-validation-in-command-objects.html</link>
+      <pubDate>Tue, 25 Sep 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/09/25/grails-nested-validation-in-command-objects.html</guid>
+      	<description>
+	&lt;p&gt;If you&apos;ve ever found yourself in need of validating nested Grails command objects, you&apos;ve likely done something similar to the below snippet:&lt;/p&gt;
+&lt;?prettify?&gt;
+&lt;pre&gt;&lt;code&gt;static constraints = {
+	profile validator: { val, obj -&amp;gt; val.validate() }
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This works well if you want to prevent someone from submitting a form without filling out the required profile data, however, the default error message leaves a lot to be desired.&lt;/p&gt;
+
+	</description>
+      <category>groovy</category>
+      <category>grails</category>
+      <category>grails33</category>
+      <category>testing</category>
+      <category>validation</category>
+      <category>ripplr</category>
+    </item>
+    <item>
+      <title>Refactoring: Replace Parameter With Explicit Methods</title>
+      <link>https://joelforjava.com/blog/2018/09/21/refactoring-replace-parameter-with-explicit-methods.html</link>
+      <pubDate>Fri, 21 Sep 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/09/21/refactoring-replace-parameter-with-explicit-methods.html</guid>
+      	<description>
+	&lt;p&gt;As I continue to refactor and refine my &lt;a href=&quot;/blog/2018/04/19/introducing-carmix-collector-project.html&quot;&gt;carmix-collector&lt;/a&gt; project, I&apos;ve come across a method that I really don&apos;t like. It looks too busy and depends on two separate parameters to determine what work should be done inside the method. Here&apos;s the method as it currently exists:&lt;/p&gt;
+&lt;?prettify?&gt;
+&lt;pre&gt;&lt;code&gt;private static boolean verifyFile(Path aPath, String indFileDir, String indReadWrite) throws IOException {
+    if (!Files.exists(aPath)) {
+        throw new IOException(&amp;quot;File Verification: &amp;quot; + aPath.getFileName() + &amp;quot; does not exist&amp;quot;);
+    }
+
+    switch (indFileDir) {
+        case FILE_TYPE:
+            if (!Files.isRegularFile(aPath)) {
+                throw new IOException(&amp;quot;File Verification: &amp;quot; + aPath.getFileName() + &amp;quot; does not exist&amp;quot;);
+            }
+            break;
+        case DIR_TYPE:
+            if (!Files.isDirectory(aPath)) {
+                throw new IOException(&amp;quot;Directory Verification: &amp;quot; + aPath.getFileName() + &amp;quot; does not exist&amp;quot;);
+            }
+            break;
+    }
+
+    switch (indReadWrite) {
+        case READ_FILE:
+            if (!Files.isReadable(aPath)) {
+                throw new IOException(&amp;quot;File Verification: Cannot read file &amp;quot; + aPath.getFileName());
+            }
+            break;
+        case WRITE_FILE:
+            if (!Files.isWritable(aPath)) {
+                throw new IOException(&amp;quot;File Verification: Cannot write to file &amp;quot; + aPath.getFileName());
+            }
+            break;
+        }
+    return true;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What we should do is create a new method for each possible parameter value. We should use the &lt;a href=&quot;https://refactoring.com/catalog/replaceParameterWithExplicitMethods.html&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;&gt;Replace Parameter With Explicit Methods&lt;/a&gt; refactoring.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>refactoring</category>
+      <category>carmix-creator</category>
+    </item>
+    <item>
+      <title>Updating from Grails Test Mixin Framework to Grails Testing Support Framework</title>
+      <link>https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework.html</link>
+      <pubDate>Fri, 17 Aug 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/08/17/updating-from-grails-test-mixin-framework.html</guid>
+      	<description>
+	&lt;p&gt;In a &lt;a href=&quot;/blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html&quot;&gt;previous post&lt;/a&gt;, I upgraded my Ripplr application, which was using Grails 3.1.9 to version 3.3.6. One of the changes that have come with Grails 3.3 is the new Grails Testing Support framework, which makes heavy use of Groovy traits as opposed to the previous Test Mixin framework, which relied heavily on annotations and AST transformations.&lt;/p&gt;
+&lt;p&gt;Initially, I was not looking forward to updating test frameworks. However, during my first few refactorings, it has proven to be mostly worry free. For the most part, you&apos;re replacing Annotations with trait implementations. You may have to make some other small tweaks, but so far they have been quick to implement.&lt;/p&gt;
+
+	</description>
+      <category>groovy</category>
+      <category>grails</category>
+      <category>testing</category>
+      <category>grails testing support</category>
+      <category>ripplr</category>
+    </item>
+    <item>
+      <title>Testing: Using JUnit Rule(s) to Reduce the Usage of Mocking Frameworks</title>
+      <link>https://joelforjava.com/blog/2018/08/10/testing-using-junit-rules-to-reduce-the-usage-of-mocking-frameworks.html</link>
+      <pubDate>Fri, 10 Aug 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/08/10/testing-using-junit-rules-to-reduce-the-usage-of-mocking-frameworks.html</guid>
+      	<description>
+	&lt;p&gt;In a &lt;a href=&quot;/blog/2018/07/09/unit-testing-with-mockito-and-powermock.html&quot;&gt;previous post&lt;/a&gt;, I wrote a unit test using JUnit 4.12 that unfortunately made use of what I believed to be unneeded uses of Mockito and PowerMockito. These tests were written with an earlier Junit 4 mindset, a mindset that was unaware of &lt;a href=&quot;https://www.testwithspring.com/lesson/introduction-to-junit-4-rules/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;&gt;JUnit Rules&lt;/a&gt;. Now that I&apos;ve had some time to look around some, I&apos;m going to rewrite the tests making use of the TemporaryFolder Rule.&lt;/p&gt;
+&lt;p&gt;The &lt;code&gt;TemporaryFolder&lt;/code&gt; rule allows us to create folders and files that are deleted after a test is completed. I realize this is something that I could have likely done without the Rule and even prior to my mocking, but using the Rule makes it far easier to work with and performs the cleanup seamlessly.&lt;/p&gt;
+&lt;p&gt;All of the changes made are very similar and involve setting up a temporary file and writing to the file and then using it for the current test.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>junit</category>
+      <category>junit4</category>
+      <category>junit47</category>
+    </item>
+    <item>
+      <title>Updating from Grails 3.1.9 to Grails 3.3.6</title>
+      <link>https://joelforjava.com/blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html</link>
+      <pubDate>Mon, 16 Jul 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html</guid>
+      	<description>
+	&lt;p&gt;I had intended to write an article on upgrading to Grails 3.3.5, but I ran into an &lt;a href=&quot;https://github.com/grails/grails-core/issues/10993&quot;&gt;issue&lt;/a&gt; that prevented me from completing the upgrade. Luckily, this issue was fixed in the 3.3.6 release.&lt;/p&gt;
+&lt;p&gt;I will walk through the steps I performed to upgrade my Grails 3.1.9 application, Ripplr to version 3.3.6. These steps will likely work for any 3.1.x to 3.3.x upgrade, but I have only successfully tested upgrading with this specific combination.&lt;/p&gt;
+&lt;p&gt;Here are the steps I performed:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Update build.gradle
+&lt;ul&gt;
+&lt;li&gt;Update GORM Version&lt;/li&gt;
+&lt;li&gt;Update to Hibernate 5&lt;/li&gt;
+&lt;li&gt;Add Grails test mixins dependency for tests that are now using a legacy framework&lt;/li&gt;
+&lt;li&gt;Add new dependencies&lt;/li&gt;
+&lt;li&gt;Update plugin versions, if at all possible\&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Update application.yml and application.groovy&lt;/li&gt;
+&lt;li&gt;Update resources.groovy&lt;/li&gt;
+&lt;li&gt;Move Bootstrap.groovy and UrlMappings.groovy out of the default package&lt;/li&gt;
+&lt;li&gt;Update Gradle Wrapper&lt;/li&gt;
+&lt;li&gt;Add Grails wrapper&lt;/li&gt;
+&lt;li&gt;Update Logging Configuration&lt;/li&gt;
+&lt;li&gt;Fix broken unit tests (or Ignore them)&lt;/li&gt;
+&lt;li&gt;Fix broken integration tests (or Ignore them)&lt;/li&gt;
+&lt;li&gt;Verify CORS still works&lt;/li&gt;
+&lt;li&gt;Fix Hibernate startup errors that occurred after updates&lt;/li&gt;
+&lt;/ol&gt;
+
+	</description>
+      <category>groovy</category>
+      <category>grails</category>
+      <category>grails33</category>
+      <category>ripplr</category>
+    </item>
+    <item>
+      <title>Testing: Unit Testing with Mockito and Powermock</title>
+      <link>https://joelforjava.com/blog/2018/07/09/testing-unit-testing-with-mockito-and-powermock.html</link>
+      <pubDate>Mon, 9 Jul 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/07/09/testing-unit-testing-with-mockito-and-powermock.html</guid>
+      	<description>
+	&lt;p&gt;Testing your code is an important step in the software development lifecycle and should be done as early as possible. Testing, in general, helps us catch mistakes and bugs in our code. I once worked on a project that had very little tests in place and the majority of those tests failed because your database is different from the test database. But, it also had some very important tests that would check Spring configurations and ensure everything was wired up correctly. These integration tests helped catch a lot of wiring issues quickly and helped us be more aware of how we updated the configurations as we updated the code. Tests, no matter if we&apos;re talking about unit, integration, functional, stress, or any other form of testing, help us find problems with the systems we write and gives us confidence that the code we write will work as expected.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>testing</category>
+      <category>junit</category>
+      <category>unit testing</category>
+      <category>powermock</category>
+      <category>mockito</category>
+      <category>carmix-collector</category>
+    </item>
+    <item>
+      <title>Refactoring: Extract Class (Part 2)</title>
+      <link>https://joelforjava.com/blog/2018/06/05/refactoring-extract-class-part-2.html</link>
+      <pubDate>Tue, 5 Jun 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/06/05/refactoring-extract-class-part-2.html</guid>
+      	<description>
+	&lt;p&gt;In a previous &lt;a href=&quot;/blog/2018/05/29/refactoring-extract-class-part-1.html&quot;&gt;post&lt;/a&gt;, I began refactoring the &lt;a href=&quot;/blog/2018/04/19/introducing-carmix-collector-project.html&quot;&gt;carmix-collector&lt;/a&gt; project. While its function is fairly simple, it had one class trying to do all the work which, among other things, makes the code terribly hard to test. In this post, I will be doing another refactoring that might take a minute to work out, but we will back up and try something new, if needed.&lt;/p&gt;
+&lt;p&gt;I start by creating a new playlist processor class, &lt;code&gt;M3UPlaylistProcessor&lt;/code&gt;. Its purpose will be to process the selected playlist file. Inside the new class, I create a new method, &lt;code&gt;process&lt;/code&gt; that will contain the body of the existing &lt;code&gt;processPlaylistPath&lt;/code&gt; method from the GUI class. I think naming the method &lt;code&gt;process&lt;/code&gt; is a bit better than &lt;code&gt;processPlaylistPath&lt;/code&gt; since the class name makes &apos;Playlist&apos; redundant and the &lt;code&gt;Path&lt;/code&gt; method parameter makes it clear we are processing a Path.&lt;/p&gt;
+&lt;p&gt;If you try and compile this code (or are using an IDE), you&apos;ll notice an error: &lt;code&gt;Cannot resolve method &apos;processTrackURL&apos;&lt;/code&gt;. You&apos;ll probably also notice it doesn&apos;t recognize the Status enum either or the Strings used to denote the M3U header and info sections. Seems simple enough to just copy the processTrackURL method and other missing items from the GUI class and keep going.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>refactoring</category>
+      <category>carmix-collector</category>
+    </item>
+    <item>
+      <title>Refactoring: Extract Class (Part 1)</title>
+      <link>https://joelforjava.com/blog/2018/05/29/refactoring-extract-class-part-1.html</link>
+      <pubDate>Tue, 29 May 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/05/29/refactoring-extract-class-part-1.html</guid>
+      	<description>
+	&lt;p&gt;Refactoring is an important step in the software development process. It should be practiced early and often to help maintain and improve code quality over time. Of course, we&apos;re all guilty of putting this off when deadlines and management expectations force us to choose between just having something working on time or improving upon your existing code while writing new functionality. If we&apos;re lucky, we&apos;re able to go back and refactor the code before the project is over, but it must be done with great care to ensure that we do not break any of the existing functionality. This is where it would be important to have an existing test suite to verify everything runs as expected before and after refactoring.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>refactoring</category>
+      <category>carmix-collector</category>
+    </item>
+    <item>
+      <title>CORS for Grails 3.1.9</title>
+      <link>https://joelforjava.com/blog/2018/05/18/cors-for-grails-3-1-9.html</link>
+      <pubDate>Fri, 18 May 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/05/18/cors-for-grails-3-1-9.html</guid>
+      	<description>
+	&lt;p&gt;At my (now former) day job, I work on a monolithic java web application. CORS, cross-origin resource sharing, is not something that is a big concern for that application since, by default, a script can make a request to the same server from which it originates. However, modern web applications tend to have incoming connections from a variety of other applications, including mobile applications or a single page application running on a separate server. When working with these applications or with your own applications that need to connect to different servers, CORS is something that developers definitely need to keep in mind.&lt;/p&gt;
+
+	</description>
+      <category>groovy</category>
+      <category>grails</category>
+      <category>cors</category>
+      <category>ripplr</category>
+    </item>
+    <item>
+      <title>Updating Legacy Code, Part III: Switch with Strings</title>
+      <link>https://joelforjava.com/blog/2018/05/10/updating-legacy-code-part-iii-switch-with-strings.html</link>
+      <pubDate>Thu, 10 May 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/05/10/updating-legacy-code-part-iii-switch-with-strings.html</guid>
+      	<description>
+	&lt;p&gt;The past few posts have been going over some of the improvements that came with updating to Java 7. This article will showcase how to use strings in a switch statement using the &lt;a href=&quot;/blog/2018/04/19/introducing-carmix-collector-project.html&quot;&gt;carmix-creator&lt;/a&gt; project.&lt;/p&gt;
+&lt;p&gt;Prior to Java 7, you had to use constants of type &lt;code&gt;Byte&lt;/code&gt;, &lt;code&gt;Character&lt;/code&gt;, &lt;code&gt;Short&lt;/code&gt;, &lt;code&gt;Integer&lt;/code&gt; constants (or their primitive equivalents) or &lt;code&gt;enum&lt;/code&gt;s as values for the cases in a &lt;code&gt;switch&lt;/code&gt; statement. Personally, I think this is the way to go, but it isn&apos;t always possible and I&apos;m glad they made the change. The majority of my past projects made minimal use of &lt;code&gt;enum&lt;/code&gt; or &lt;code&gt;Integer&lt;/code&gt;/&lt;code&gt;int&lt;/code&gt; constants. They relied heavily on Strings, so this change would help make an endless sea of if statements look a little bit better. Even in my own code, I&apos;ve only started to embrace enums, but it&apos;ll be a while before I get to writing about all that.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>java 7</category>
+      <category>nio.2</category>
+      <category>legacy</category>
+      <category>carmix-creator</category>
+    </item>
+    <item>
+      <title>Introdicing the Ripplr Projects</title>
+      <link>https://joelforjava.com/blog/2018/05/08/introducing-the-ripplr-projects.html</link>
+      <pubDate>Tue, 8 May 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/05/08/introducing-the-ripplr-projects.html</guid>
+      	<description>
+	&lt;p&gt;&lt;a href=&quot;https://github.com/joelforjava/ripplr-grails3&quot;&gt;Ripplr&lt;/a&gt; is a Twitter-like application that I originally developed as I followed along in the Grails in Action books from Manning Publications. It was originally written using Grails 2 and I updated it to use Grails 3.1.9 a while ago. It&apos;s not the prettiest looking site in the world, but it makes use of &lt;a href=&quot;https://getbootstrap.com/docs/3.3/&quot;&gt;Bootstrap 3.3&lt;/a&gt;, some &lt;a href=&quot;http://jquery.com/&quot;&gt;jQuery&lt;/a&gt;, and has basic follow &amp;amp; blocking functionality, so it has a decent foundation with which to start. It&apos;s a bit messy all around, but I&apos;m hoping to be able to use it for this blog a bit and clean it up along the way.&lt;/p&gt;
+&lt;p&gt;There are a few Ripplr-related projects as well. There&apos;s an &lt;a href=&quot;https://github.com/joelforjava/ripplr-angular-ui&quot;&gt;Angular&lt;/a&gt; user interface that I&apos;ve written separately from the main application that I will use from time to time to help test out ideas. There is likely going to be a pure Java version of Ripplr as well. I have a few things I&apos;d like to write about using Java web applications, so I could probably make use of Ripplr here.&lt;/p&gt;
+&lt;p&gt;Feel free to check it out on GitHub and keep checking back regularly to see its progress.&lt;/p&gt;
+
+	</description>
+      <category>groovy</category>
+      <category>grails</category>
+      <category>ripplr</category>
+    </item>
+    <item>
+      <title>Updating Legacy Code, Part II: NIO.2</title>
+      <link>https://joelforjava.com/blog/2018/05/03/updating-legacy-code-part-ii-nio-2.html</link>
+      <pubDate>Thu, 3 May 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/05/03/updating-legacy-code-part-ii-nio-2.html</guid>
+      	<description>
+	&lt;p&gt;In a previous post, we updated legacy Java 5 code to use try-with-resources. In this post, we will be updating that same legacy code to use the new to Java 7 NIO.2 enhancements.&lt;/p&gt;
+&lt;p&gt;Java&apos;s NIO.2 is a set of new classes and methods that predominantly live in the &lt;code&gt;java.nio&lt;/code&gt; package. It is intended to be a replacement of &lt;code&gt;java.io.File&lt;/code&gt; as the abstraction when dealing with code that reads or writes from a filesystem.&lt;/p&gt;
+&lt;p&gt;The starting point for using NIO.2 is the &lt;code&gt;Path&lt;/code&gt;. The &lt;code&gt;Path&lt;/code&gt; class contains various methods for interacting with the path and extracting information about it. For the &lt;a href=&quot;/blog/2018/04/19/introducing-carmix-collector-project.html&quot;&gt;carmix-creator&lt;/a&gt; application, we will replace all uses of the &lt;code&gt;File&lt;/code&gt; class and replace them with &lt;code&gt;Path&lt;/code&gt; and other new classes and methods from the &lt;code&gt;java.nio.file&lt;/code&gt; package.&lt;/p&gt;
+&lt;p&gt;Since carmix-creator copies files, it makes heavy use of several &lt;code&gt;File&lt;/code&gt;-related classes. For starters, the &lt;code&gt;loadPlaylistFile&lt;/code&gt; method can be refactored into a new method &lt;code&gt;loadPlaylistPath&lt;/code&gt;.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>java 7</category>
+      <category>nio.2</category>
+      <category>legacy</category>
+      <category>carmix-creator</category>
+    </item>
+    <item>
+      <title>Updating Legacy Code, Part I: Try with Resources</title>
+      <link>https://joelforjava.com/blog/2018/04/26/updating-legacy-code-part-i-try-with-resources.html</link>
+      <pubDate>Thu, 26 Apr 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/04/26/updating-legacy-code-part-i-try-with-resources.html</guid>
+      	<description>
+	&lt;p&gt;So, Java 7 has been out for a quite a while now, but my corporate career had yet to expose me to anything newer than Java 6 at the time I originally wrote this. Even now, as of April 2018, I have yet to work with Java 8 in an enterprise setting. So, I took it upon myself at the time to learn some of the updates to the Java language in this version before starting to look at the changes in Java 8 (and now Java 9 and 10!).&lt;/p&gt;
+&lt;p&gt;Java 7 brought several key improvements to the language. Some of these improvements I will be covering include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Try-with-resources&lt;/li&gt;
+&lt;li&gt;New File IO (NIO.2)&lt;/li&gt;
+&lt;li&gt;The ability to use strings in a switch statement&lt;/li&gt;
+&lt;li&gt;The ability to handle multiple exceptions in one catch block&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;For this article, we are highlighting try-with resources and how this change can be applied to pre-Java 7 code. To showcase these improvements, I will be using the &lt;a href=&quot;/blog/2018/04/19/introducing-carmix-collector-project.html&quot;&gt;carmix-creator&lt;/a&gt;. It has several areas that are in dire need of the Java 7 improvements.&lt;/p&gt;
+ 
+	</description>
+      <category>java</category>
+      <category>java 7</category>
+      <category>try with resources</category>
+      <category>legacy</category>
+      <category>carmix-creator</category>
+    </item>
+    <item>
+      <title>Introducing the &apos;carmix-collector&apos; Project</title>
+      <link>https://joelforjava.com/blog/2018/04/19/introducing-the-carmix-collector-project.html</link>
+      <pubDate>Thu, 19 Apr 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/04/19/introducing-the-carmix-collector-project.html</guid>
+      	<description>
+	&lt;p&gt;I will be using several projects of various sizes throughout my posts here. The first project I would like to introduce is one I&apos;ve dubbed the &apos;carmix-collector&apos;. It&apos;s a Java Swing application that was created using Netbeans and I wrote the original version of this code around 2006. The purpose of this application was to quickly copy songs from an MP3 Playlist (*.m3u) file so that they could be burned to a CD for use in my MP3-enabled car stereo. Needless to say, I haven&apos;t paid much attention to this code in years.&lt;/p&gt;
+
+	</description>
+      <category>java</category>
+      <category>legacy</category>
+      <category>project</category>
+      <category>carmix-creator</category>
+    </item>
+    <item>
+      <title>Giving This Another Try</title>
+      <link>https://joelforjava.com/blog/2018/04/11/giving-this-another-shot.html</link>
+      <pubDate>Wed, 11 Apr 2018 00:00:00 -0400</pubDate>
+      <guid isPermaLink="false">blog/2018/04/11/giving-this-another-shot.html</guid>
+      	<description>
+	&lt;p&gt;For several years now, I have set out intending to start this blog all about Java and the surrounding ecosystem. I keep putting it off for one reason or another, ranging from feeling like I never enough time to fearing that I&apos;m not good enough to keep up something like this.&lt;/p&gt;
+&lt;p&gt;So, here I am fully intending to give this all a try. Again. I have so many things I’d like to write about, which brings up the question of where I should start writing. I suppose the best place for me to start is the beginning. I have several articles I wrote for myself back when Java 7 came out. Of course, we are now up to Java &lt;del datetime=&quot;2018-04-11T02:41:04+00:00&quot;&gt;9&lt;/del&gt; 10, so these articles aren&apos;t as relevant as they may have been when I originally wrote them. I think I will keep the originals more or less intact. They deal with migrating code written using Java 5 and making use of new Java 7 constructs. I will take those changes and update the code to make use of Java 8, wherever possible and keep going to 9 and above to help keep up with the times.&lt;/p&gt;
+&lt;p&gt;This code will also need a lot of work in regards to refactoring, which will all come after moving through the newer versions of Java.  I&apos;ll just go where the code takes me, I suppose.&lt;/p&gt;
+&lt;p&gt;I also like working with Groovy, Grails, Scala, and plenty of other languages and frameworks within the Java world and I hope to have some articles around my experiences with them and more.&lt;/p&gt;
+&lt;p&gt;Here’s to hoping I’ll keep things going this time around!&lt;/p&gt;
+
+	</description>
+      <category>hello world</category>
+    </item>
+    <item>
+      <title>Hello World!</title>
+      <link>https://joelforjava.com/blog/2016/12/31/hello-world.html</link>
+      <pubDate>Sat, 31 Dec 2016 00:00:00 -0500</pubDate>
+      <guid isPermaLink="false">blog/2016/12/31/hello-world.html</guid>
+      	<description>
+	&lt;p&gt;Hi everyone! My name is Joel and I have been a java developer for over 10 years now. Lately, I have become more and more interested with working with newer technologies and languages but find myself working on legacy software without a lot of chances to branch out into the expanded java world. Through this blog, I hope to explore newer technologies and help explain the baffling issues I come across along the way. I will also discuss the java language itself and explore topics that will hopefully be relevant to more than just myself.&lt;/p&gt;
+&lt;p&gt;I look forward to posting new topics and ideas!&lt;/p&gt;
+&lt;p&gt;Also, please excuse the mess as I continue configuring the site in a way I think looks best.&lt;/p&gt;
+
+	</description>
+      <category>hello world</category>
+    </item>
+
+  </channel> 
+</rss>

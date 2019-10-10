@@ -6,15 +6,6 @@
     "description": "A site for all things Java",
     "items": [
         {
-            "id": "https://joelforjava.com/blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html",
-            "title": "Adding SSL Encryption Configuration to Kafka Connectors",
-            "url": "https://joelforjava.com/blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html"
-            "date_published": "2019-10-27T00:00:00-0400",
-            "content_html": "&lt;p&gt;One thing you should always strive to do is to enable encryption, wherever possible, even if your systems are locked away behind layers and layers of firewalls and other security protocols. Even if your systems are not public facing and don&apos;t have a public IP address, you should at the very least encrypt your communications. For this article, we will explore how we enable a Kafka connector to communicate with an SSL-encrypted Kafka cluster.&lt;/p&gt;
-",
-            "tags": [ "kafka",   "kafka connect",   "java",   "ssl",   "encryption" ]
-        }, 
-        {
             "id": "https://joelforjava.com/blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html",
             "title": "Adding Configuration Validation to the Kafka Kinesis Connector",
             "url": "https://joelforjava.com/blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html"
