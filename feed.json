@@ -145,9 +145,9 @@
             "tags": [ "java",   "refactoring",   "carmix-creator" ]
         }, 
         {
-            "id": "https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework.html",
+            "id": "https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework-to-grails-testing-support-framework.html",
             "title": "Updating from Grails Test Mixin Framework to Grails Testing Support Framework",
-            "url": "https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework.html"
+            "url": "https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework-to-grails-testing-support-framework.html"
             "date_published": "2018-08-17T00:00:00-0400",
             "content_html": "&lt;p&gt;In a &lt;a href=&quot;/blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html&quot;&gt;previous post&lt;/a&gt;, I upgraded my Ripplr application, which was using Grails 3.1.9 to version 3.3.6. One of the changes that have come with Grails 3.3 is the new Grails Testing Support framework, which makes heavy use of Groovy traits as opposed to the previous Test Mixin framework, which relied heavily on annotations and AST transformations.&lt;/p&gt;
 &lt;p&gt;Initially, I was not looking forward to updating test frameworks. However, during my first few refactorings, it has proven to be mostly worry free. For the most part, you&apos;re replacing Annotations with trait implementations. You may have to make some other small tweaks, but so far they have been quick to implement.&lt;/p&gt;

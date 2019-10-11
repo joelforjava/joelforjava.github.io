@@ -6,8 +6,8 @@
     <atom:link href="https://joelforjava.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>JBake Bootstrap Template</description>
     <language>en-gb</language>
-    <pubDate>Thu, 10 Oct 2019 17:40:25 -0400</pubDate>
-    <lastBuildDate>Thu, 10 Oct 2019 17:40:25 -0400</lastBuildDate>
+    <pubDate>Fri, 11 Oct 2019 08:52:37 -0400</pubDate>
+    <lastBuildDate>Fri, 11 Oct 2019 08:52:37 -0400</lastBuildDate>
 
     <item>
       <title>Adding Configuration Recommendations to the Kafka Kinesis Connector</title>
@@ -15,7 +15,7 @@
       <pubDate>Tue, 8 Oct 2019 00:00:00 -0400</pubDate>
       <guid isPermaLink="false">blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html</guid>
       	<description>
-	&lt;p&gt;So, we&apos;ve strengthened up our configuration validation logic for the Kafka Kinesis Connector but there&apos;s still more we can do to help those that want to use this plugin. Of course, the principles used in these articles should generally apply to most any Kafka Connector you create. The next step is to help recommend values to our users. For example, we can validate that a user has given us a valid AWS region, e.g. us-east-1, us-west-1, etc. but the user may not know all the valid regions available. For this purpose, we can provide a recommender to help recommend values to the user by implementing the &lt;code&gt;ConfigDef.Recommender&lt;/code&gt; interface.&lt;/p&gt;
+	&lt;p&gt;So, we&apos;ve strengthened up our configuration validation logic for the Kafka Kinesis Connector but there&apos;s still more we can do to help those that want to use this plugin. Of course, the principles used in these articles should generally apply to most any Kafka Connector you create. The next step is to help recommend configuration values to our users. For example, we can validate that a user has given us a valid AWS region, e.g. &lt;code&gt;us-east-1&lt;/code&gt;, &lt;code&gt;us-west-1&lt;/code&gt;, etc. but the user may not know all the valid regions available. For this purpose, we can provide a recommender to help recommend values to the user by implementing the &lt;code&gt;ConfigDef.Recommender&lt;/code&gt; interface.&lt;/p&gt;
 
 	</description>
       <category>kafka</category>
@@ -205,9 +205,9 @@
     </item>
     <item>
       <title>Updating from Grails Test Mixin Framework to Grails Testing Support Framework</title>
-      <link>https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework.html</link>
+      <link>https://joelforjava.com/blog/2018/08/17/updating-from-grails-test-mixin-framework-to-grails-testing-support-framework.html</link>
       <pubDate>Fri, 17 Aug 2018 00:00:00 -0400</pubDate>
-      <guid isPermaLink="false">blog/2018/08/17/updating-from-grails-test-mixin-framework.html</guid>
+      <guid isPermaLink="false">blog/2018/08/17/updating-from-grails-test-mixin-framework-to-grails-testing-support-framework.html</guid>
       	<description>
 	&lt;p&gt;In a &lt;a href=&quot;/blog/2018/07/16/updating-from-grails-3-1-9-to-grails-3-3-6.html&quot;&gt;previous post&lt;/a&gt;, I upgraded my Ripplr application, which was using Grails 3.1.9 to version 3.3.6. One of the changes that have come with Grails 3.3 is the new Grails Testing Support framework, which makes heavy use of Groovy traits as opposed to the previous Test Mixin framework, which relied heavily on annotations and AST transformations.&lt;/p&gt;
 &lt;p&gt;Initially, I was not looking forward to updating test frameworks. However, during my first few refactorings, it has proven to be mostly worry free. For the most part, you&apos;re replacing Annotations with trait implementations. You may have to make some other small tweaks, but so far they have been quick to implement.&lt;/p&gt;
