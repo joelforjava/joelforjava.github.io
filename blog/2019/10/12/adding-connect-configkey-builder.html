@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>
+
+    <meta charset="utf-8"/>
+    <title>Creating a Builder for the Kafka Connect ConfigKey Class</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/semantic.min.css" rel="stylesheet">
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+	
+	<!-- Fixed navbar -->
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
+        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
+        <a class="item" href="../../../../about.html">About</a>
+        <div class="ui simple dropdown item">
+          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
+          <div class="menu">
+            <a class="item" href="../../../../feed.xml">RSS</a>
+            <a class="item" href="../../../../feed.json">JSON Feed</a>
+          </div>
+        </div>
+        </div>
+    </div>
+    <div class="ui main container">
+	<h1 class="ui header">
+		Creating a Builder for the Kafka Connect ConfigKey Class
+		<div class="sub header">
+		12 October 2019
+
+		</div>
+	</h1>
+
+
+	<p><p>One of the issues I have with creating a custom ConfigDef for the Kafka Kinesis Connector is having to deal with multiple, very long, method signatures for <code>ConfigDef.define</code>. <code>ConfigDef</code> provides an astonishing 16 <code>define</code> methods as of version <code>0.11.0.2</code> (the version that's used by the project), with one that takes in a <code>ConfigKey</code> that actually performs the work. All of the other methods eventually call this method, passing in a new <code>ConfigKey</code>, which means the constructor for this class is also a monster.</p>
+<!--more-->
+<p>I'm not questioning the design decisions that went into this. I actually like how they all chain up to calling one define method. However, calls to <code>define</code> all look something like this:</p>
+<?prettify?>
+<pre><code>configDef.define(
+    REGION_CONFIG,
+    Type.STRING,
+    &quot;us-east-1&quot;,
+    REGION_VALIDATOR,
+    Importance.HIGH,
+    &quot;Specify the region of your Kinesis Firehose&quot;,
+    group,
+    ++offset,
+    Width.SHORT,
+    &quot;AWS Region&quot;,
+    REGION_RECOMMENDER)
+    .define(
+        MAPPING_FILE_CONFIG,
+        Type.STRING,
+        ConfigDef.NO_DEFAULT_VALUE,
+        MAPPING_FILE_VALIDATOR,
+        Importance.HIGH,
+        &quot;Location of the YAML Mapping file that defines the mapping from topics to destinations&quot;,
+        group,
+        ++offset,
+        Width.MEDIUM,
+        &quot;Mapping Configuration Location&quot;)
+
+// additional calls to define
+</code></pre>
+<p>And, while you might be able to tell that the first parameter is the config name, with the type as the second parameter, it quickly becomes problematic when you deal with definitions that might not have a Validator or that might not have a need to pass in a default value. It's just hard to look at, even with the help of an IDE such as Intellij or Eclipse. However, using a builder would help make this more readable.</p>
+<h2>What is the Builder Pattern?</h2>
+<p>The builder pattern provides an alternate way of creating and instantiating a new object. As <a href="https://en.wikipedia.org/wiki/Builder_pattern">Wikipedia</a> puts it, the builder is designed to provide a flexible solution to various object creation problems in object-oriented programming. With this pattern, you create an additional class, the Builder, that contains the same fields that you're wanting to use to create a class. For example, for a <code>ConfigKey</code> Builder, we'd want to contain the fields below:</p>
+<?prettify?>
+<pre><code>String name;
+Type type;
+String documentation;
+Object defaultValue;
+Validator validator;
+Importance importance;
+String group;
+int orderInGroup;
+Width width;
+String displayName;
+List&lt;String&gt; dependents;
+Recommender recommender;
+boolean internalConfig;
+</code></pre>
+<p>Each of these fields would contain a corresponding setter, such as <code>setType</code>, <code>setDocumentation</code>, etc. For builders, I tend to not use the <code>set</code> prefix and just name the setters the same as the field name. Alternatively, I might find myself using a <code>with</code> prefix. After you set all of the fields you wish to set, you then call the <code>build()</code> method that takes care of creating the new class. Also, rather than having a <code>setName</code>, I pass the name into the builder constructor, since all <code>ConfigKey</code>s really should have a name associated with them.</p>
+<p>So, I created a builder that makes it more apparent which values are being set. The code from above becomes the following:</p>
+<?prettify?>
+<pre><code>configDef.define(new ConfigKeyBuilder(REGION_CONFIG)
+        .type(Type.STRING)
+        .defaultValue(&quot;us-east-1&quot;)
+        .validator(REGION_VALIDATOR)
+        .importance(Importance.HIGH)
+        .documentation(&quot;Specify the region of your Kinesis Firehose&quot;)
+        .group(group)
+        .orderInGroup(++offset)
+        .width(Width.SHORT)
+        .displayName(&quot;AWS Region&quot;)
+        .recommender(REGION_RECOMMENDER).build())
+    .define(new ConfigKeyBuilder(MAPPING_FILE_CONFIG)
+            .type(Type.STRING)
+            .defaultValue(ConfigDef.NO_DEFAULT_VALUE)
+            .validator(MAPPING_FILE_VALIDATOR)
+            .importance(Importance.HIGH)
+            .documentation(&quot;Location of the YAML Mapping file that defines the mapping from topics to destinations&quot;)
+            .group(group)
+            .orderInGroup(++offset)
+            .width(Width.MEDIUM)
+            .displayName(&quot;Mapping Configuration Location&quot;).build())
+</code></pre>
+<p>In my opinion, this is far better than having to guess and remember the order of the parameters to the other <code>define</code> methods. Using the <code>ConfigKeyBuilder</code> makes the values which you're setting more apparent, such as the recommender or the default value for a configuration. The builder pattern can make code more verbose, but in this case, I will happily accept the verbosity over the confusion of all the <code>define</code> methods. Also, the builder pattern could potentially lead to incompletely instantiated objects, but again, it's worth the risk since it helps lessen my mental load for creating new objects. If you wanted to take things one step further, you could run validators prior to creating the objects to ensure you have all the required values set.</p>
+<p>The complete class can be viewed in my <a href="https://github.com/joelforjava/multi-destination-kinesis-kafka-connector/blob/v10/src/main/java/com/amazon/kinesis/kafka/config/ConfigKeyBuilder.java">GitHub repo</a>.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    
+    <div class="ui inverted vertical footer segment">
+      <div class="ui center aligned container">
+        <div class="ui stackable inverted divided grid">
+          <div class="seven wide column">
+            <h4 class="ui inverted header">Find Me Online</h4>
+            <div class="ui inverted horizontal link list">
+              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
+              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
+              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui horizontal inverted small divided link list">
+          <p class="item">&copy; 2019</p>
+          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
+          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../../../js/semantic.min.js"></script>
+    <script src="../../../../js/prettify.js"></script>
+    <script>
+      $(document)
+          .ready(function() {
+
+            // fix menu when passed
+            $('.masthead')
+              .visibility({
+                once: false,
+                onBottomPassed: function() {
+                  $('.fixed.menu').transition('fade in');
+                },
+                onBottomPassedReverse: function() {
+                  $('.fixed.menu').transition('fade out');
+                }
+              })
+            ;
+          })
+        ;
+      </script>
+  </body>
+</html>
