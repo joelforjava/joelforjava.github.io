@@ -82,6 +82,17 @@
 	<div class="ui main container">
 		  <div class="ui segments">
 		  	<div class="ui black inverted padded segment">
+				<a href="blog/2019/10/12/adding-connect-configkey-builder.html"><h1 class="ui grey inverted header">Creating a Builder for the Kafka Connect ConfigKey Class</h1></a>
+				<p>12 October 2019</p>
+			</div>
+			<div class="ui padded segment">
+				<p><p>One of the issues I have with creating a custom ConfigDef for the Kafka Kinesis Connector is having to deal with multiple, very long, method signatures for <code>ConfigDef.define</code>. <code>ConfigDef</code> provides an astonishing 16 <code>define</code> methods as of version <code>0.11.0.2</code> (the version that's used by the project), with one that takes in a <code>ConfigKey</code> that actually performs the work. All of the other methods eventually call this method, passing in a new <code>ConfigKey</code>, which means the constructor for this class is also a monster.</p>
+</p>
+				<p><a href="blog/2019/10/12/adding-connect-configkey-builder.html">Read more...</a></p>
+			</div>
+		  </div>
+		  <div class="ui segments">
+		  	<div class="ui black inverted padded segment">
 				<a href="blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html"><h1 class="ui grey inverted header">Adding Configuration Recommendations to the Kafka Kinesis Connector</h1></a>
 				<p>08 October 2019</p>
 			</div>

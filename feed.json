@@ -6,6 +6,15 @@
     "description": "A site for all things Java",
     "items": [
         {
+            "id": "https://joelforjava.com/blog/2019/10/12/adding-connect-configkey-builder.html",
+            "title": "Creating a Builder for the Kafka Connect ConfigKey Class",
+            "url": "https://joelforjava.com/blog/2019/10/12/adding-connect-configkey-builder.html"
+            "date_published": "2019-10-12T00:00:00-0400",
+            "content_html": "&lt;p&gt;One of the issues I have with creating a custom ConfigDef for the Kafka Kinesis Connector is having to deal with multiple, very long, method signatures for &lt;code&gt;ConfigDef.define&lt;/code&gt;. &lt;code&gt;ConfigDef&lt;/code&gt; provides an astonishing 16 &lt;code&gt;define&lt;/code&gt; methods as of version &lt;code&gt;0.11.0.2&lt;/code&gt; (the version that&apos;s used by the project), with one that takes in a &lt;code&gt;ConfigKey&lt;/code&gt; that actually performs the work. All of the other methods eventually call this method, passing in a new &lt;code&gt;ConfigKey&lt;/code&gt;, which means the constructor for this class is also a monster.&lt;/p&gt;
+",
+            "tags": [ "kafka",   "kinesis",   "kafka connect",   "java",   "design patterns",   "builder" ]
+        }, 
+        {
             "id": "https://joelforjava.com/blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html",
             "title": "Adding Configuration Recommendations to the Kafka Kinesis Connector",
             "url": "https://joelforjava.com/blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html"
