@@ -9,20 +9,19 @@
       gtag('js', new Date());
 
       gtag('config', 'UA-148165040-1');
-    </script>
-
+    </script>    
     <meta charset="utf-8"/>
     <title>My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="keywords" content="">
     <meta name="generator" content="JBake">
 
     <!-- Le styles -->
-    <link href="../../../../css/semantic.min.css" rel="stylesheet">
     <link href="../../../../css/asciidoctor.css" rel="stylesheet">
-    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/main.css" rel="stylesheet">
+    <link href="../../../../css/custom.css" rel="stylesheet">
     <link href="../../../../css/prettify.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -37,34 +36,39 @@
     <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
     <link rel="shortcut icon" href="../../../../favicon.ico">
   </head>
-  <body onload="prettyPrint()">
+  <body class="is-preload" onload="prettyPrint()">
+		<!-- Content -->
+			<div id="content">
+				<div class="inner">
 	
-	<!-- Fixed navbar -->
-    <div class="ui fixed inverted menu">
-        <div class="ui container">
-          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
-        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
-        <a class="item" href="../../../../about.html">About</a>
-        <div class="ui simple dropdown item">
-          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
-          <div class="menu">
-            <a class="item" href="../../../../feed.xml">RSS</a>
-            <a class="item" href="../../../../feed.json">JSON Feed</a>
-          </div>
-        </div>
-        </div>
-    </div>
-    <div class="ui main container">
-	<h1 class="ui header">
-		My Kafka Connect Woes When Updating the Kafka Kinesis Plugin
-		<div class="sub header">
-		28 September 2019
+			<!-- Post -->
+				<article class="box post">
+					<header>
+						<!--
+							Note: Titles and subtitles will wrap automatically when necessary, so don't worry
+							if they get too long. You can also remove the <p> entirely if you don't
+							need a subtitle.
+						-->
 
-		</div>
-	</h1>
+						<h2>My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</h2>
+						<p>28 September 2019</p> 
+					</header>
 
+					<div class="info">
+						<!--
+							Note: The date should be formatted exactly as it's shown below. In particular, the
+							"least significant" characters of the month should be encapsulated in a <span>
+							element to denote what gets dropped in 1200px mode (eg. the "uary" in "January").
+							Oh, and if you don't need a date for a particular page or post you can simply delete
+							the entire "date" element.
 
-	<p><p>We have several 3-node Kafka connect clusters that each process different topics. If you’ve read my <a href="/blog/2019/09/22/customizing-kafka-kinesis-connector.html">first article</a> regarding my project's customized version of the AWS Labs Kafka-Kinesis Connector, you’ve already read about the corner we backed ourselves into with our first deployments of the modified code. We’ve been working, when possible, to fix those mistakes and to make updates to the clusters and their configurations easy. Well, at least easier than the abomination with which we started.</p>
+						-->
+						<span class="date"><span class="month">Sep<span>tember</span></span> <span class="day">28</span><span class="year">, 2019</span></span>
+						<!--
+							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
+						-->
+					</div>
+					<p><p>We have several 3-node Kafka connect clusters that each process different topics. If you’ve read my <a href="/blog/2019/09/22/customizing-kafka-kinesis-connector.html">first article</a> regarding my project's customized version of the AWS Labs Kafka-Kinesis Connector, you’ve already read about the corner we backed ourselves into with our first deployments of the modified code. We’ve been working, when possible, to fix those mistakes and to make updates to the clusters and their configurations easy. Well, at least easier than the abomination with which we started.</p>
 <p>During one of the updates to the code, updates that added additional properties and an additional configuration file, we ran into an issue with one of the clusters. We were attempting a rolling update of the Kafka-Kinesis Connector plugin and while it went smoothly for the first two clusters, it was a huge pain to get this particular cluster to update appropriately.</p>
 <!--more-->
 <p>I had updated the config via the REST API with 2 new properties (<code>clusterName</code> and <code>mappingFile</code>) that were used by the new code. Calling <code>GET /&lt;CONNECTOR_ID/config</code> on each of the servers would return the updated configuration. These properties were also a part of the properties file that was stored in the <code>config</code> directory. These properties both dealt with how we were using one running connect cluster to handle data from multiple topics going into separate, sometimes multiple, Kinesis data streams.</p>
@@ -114,57 +118,78 @@ if (mappingFileUrl != null) {
 <p>I could see a case being made if the was Connect works with properties is that it ONLY uses the configuration located at <code>/&lt;CONNECTOR_ID&gt;/config</code> after first start and then if those new properties weren’t there. However, the properties WERE THERE! They were coming through in the REST API call no matter which node we made the call on. I have also since updated other properties on this same cluster and the changes were picked up instantly after calling the <code>/restart</code> endpoint.</p>
 <p>So, that's it. We shut down the cluster completely and did the update. Something I didn't want to do, but looking back on it, it was definitely quicker that the mess that ensued from trying to do a rolling update.</p>
 </p>
+				</article>
 
 	<hr />
 	
-		</div>
-		<div id="push"></div>
-    
-    <div class="ui inverted vertical footer segment">
-      <div class="ui center aligned container">
-        <div class="ui stackable inverted divided grid">
-          <div class="seven wide column">
-            <h4 class="ui inverted header">Find Me Online</h4>
-            <div class="ui inverted horizontal link list">
-              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
-              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
-              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="ui inverted section divider"></div>
-        <div class="ui horizontal inverted small divided link list">
-          <p class="item">&copy; 2019</p>
-          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
-          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
-        </div>
-      </div>
-    </div>
+				</div>
+			</div>
+		<!-- Sidebar -->
+			<div id="sidebar">
 
+				<!-- Logo -->
+					<h1 id="logo">
+						<a href="../../../../index.html">Joel for Java</a>
+					</h1>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul>
+							<li><a href="../../../../index.html">Home</a></li>
+							<li><a href="../../../../archive.html">Archives</a></li>
+							<li><a href="../../../../about.html">About</a></li>
+							<li><a href="../../../../feed.xml">Subscribe (RSS)</a></li>
+							<li><a href="../../../../feed.json">Subscribe (JSON Feed)</a></li>
+						</ul>
+					</nav>
+
+				<!-- Text -->
+					<section class="box text-style1">
+						<div class="inner">
+							<p>
+								Wouldn't an <strong>ad</strong> look fantastic here?
+							</p>
+						</div>
+					</section>
+
+				<!-- Recent Posts -->
+					<section class="box recent-posts">
+						<header>
+							<h2>Recent Posts</h2>
+						</header>
+						<ul>
+                                 
+                                <li><a href="../../../../blog/2019/10/12/adding-connect-configkey-builder.html">Creating a Builder for the Kafka Connect ConfigKey Class</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html">Adding Configuration Recommendations to the Kafka Kinesis Connector</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html">Adding Configuration Validation to the Kafka Kinesis Connector</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/09/28/my-kafka-connect-woes.html">My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</a></li>
+                                						</ul>
+					</section>
+
+				<!-- Copyright -->
+					<ul id="copyright">
+						<li>&copy; 2016 - 2019</li>
+                        <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        <li>Baked with <a href="http://jbake.org">JBake v2.6.4</a></li>
+					</ul>
+
+			</div>
+
+
+
+		<!-- Scripts -->
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../../../../js/jquery-1.11.1.min.js"></script>
-    <script src="../../../../js/semantic.min.js"></script>
-    <script src="../../../../js/prettify.js"></script>
-    <script>
-      $(document)
-          .ready(function() {
+			<script src="../../../../js/jquery.min.js"></script>
+			<script src="../../../../js/browser.min.js"></script>
+			<script src="../../../../js/breakpoints.min.js"></script>
+			<script src="../../../../js/util.js"></script>
+			<script src="../../../../js/main.js"></script>
+      		<script src="../../../../js/prettify.js"></script>
 
-            // fix menu when passed
-            $('.masthead')
-              .visibility({
-                once: false,
-                onBottomPassed: function() {
-                  $('.fixed.menu').transition('fade in');
-                },
-                onBottomPassedReverse: function() {
-                  $('.fixed.menu').transition('fade out');
-                }
-              })
-            ;
-          })
-        ;
-      </script>
-  </body>
+	</body>
 </html>

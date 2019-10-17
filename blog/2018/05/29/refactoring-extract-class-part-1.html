@@ -9,20 +9,19 @@
       gtag('js', new Date());
 
       gtag('config', 'UA-148165040-1');
-    </script>
-
+    </script>    
     <meta charset="utf-8"/>
     <title>Refactoring: Extract Class (Part 1)</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="keywords" content="">
     <meta name="generator" content="JBake">
 
     <!-- Le styles -->
-    <link href="../../../../css/semantic.min.css" rel="stylesheet">
     <link href="../../../../css/asciidoctor.css" rel="stylesheet">
-    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/main.css" rel="stylesheet">
+    <link href="../../../../css/custom.css" rel="stylesheet">
     <link href="../../../../css/prettify.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -37,34 +36,39 @@
     <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
     <link rel="shortcut icon" href="../../../../favicon.ico">
   </head>
-  <body onload="prettyPrint()">
+  <body class="is-preload" onload="prettyPrint()">
+		<!-- Content -->
+			<div id="content">
+				<div class="inner">
 	
-	<!-- Fixed navbar -->
-    <div class="ui fixed inverted menu">
-        <div class="ui container">
-          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
-        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
-        <a class="item" href="../../../../about.html">About</a>
-        <div class="ui simple dropdown item">
-          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
-          <div class="menu">
-            <a class="item" href="../../../../feed.xml">RSS</a>
-            <a class="item" href="../../../../feed.json">JSON Feed</a>
-          </div>
-        </div>
-        </div>
-    </div>
-    <div class="ui main container">
-	<h1 class="ui header">
-		Refactoring: Extract Class (Part 1)
-		<div class="sub header">
-		29 May 2018
+			<!-- Post -->
+				<article class="box post">
+					<header>
+						<!--
+							Note: Titles and subtitles will wrap automatically when necessary, so don't worry
+							if they get too long. You can also remove the <p> entirely if you don't
+							need a subtitle.
+						-->
 
-		</div>
-	</h1>
+						<h2>Refactoring: Extract Class (Part 1)</h2>
+						<p>29 May 2018</p> 
+					</header>
 
+					<div class="info">
+						<!--
+							Note: The date should be formatted exactly as it's shown below. In particular, the
+							"least significant" characters of the month should be encapsulated in a <span>
+							element to denote what gets dropped in 1200px mode (eg. the "uary" in "January").
+							Oh, and if you don't need a date for a particular page or post you can simply delete
+							the entire "date" element.
 
-	<p><p>Refactoring is an important step in the software development process. It should be practiced early and often to help maintain and improve code quality over time. Of course, we're all guilty of putting this off when deadlines and management expectations force us to choose between just having something working on time or improving upon your existing code while writing new functionality. If we're lucky, we're able to go back and refactor the code before the project is over, but it must be done with great care to ensure that we do not break any of the existing functionality. This is where it would be important to have an existing test suite to verify everything runs as expected before and after refactoring.</p>
+						-->
+						<span class="date"><span class="month">May<span></span></span> <span class="day">29</span><span class="year">, 2018</span></span>
+						<!--
+							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
+						-->
+					</div>
+					<p><p>Refactoring is an important step in the software development process. It should be practiced early and often to help maintain and improve code quality over time. Of course, we're all guilty of putting this off when deadlines and management expectations force us to choose between just having something working on time or improving upon your existing code while writing new functionality. If we're lucky, we're able to go back and refactor the code before the project is over, but it must be done with great care to ensure that we do not break any of the existing functionality. This is where it would be important to have an existing test suite to verify everything runs as expected before and after refactoring.</p>
 <!--more-->
 <p>In my case, if you look at the <a href="https://github.com/joelforjava/carmix-collector/tree/b83078b18e6040f6b07b970c2662f312f6070906">carmix-creator</a> project, I have a monolithic class that extends <code>JFrame</code>, which does not make it easy to test all of the moving parts separately. I want to get this project to that point, so in order to do that I need to carefully refactor some of the functionality out into a separate class. A class should not take on more responsibilities than required. There are several areas of this class we could look at for refactoring purposes, including the parsing of the M3U files and copying files. The GUI class should focus on displaying the form and leave the rest of the work to other classes. For starters, I'll be refactoring out the copy functionality into a new class whose sole purpose is to handle copying files.</p>
 <p>Once the copy functionality is in its own class, it should be easier to test. There are several options on how we could refactor the copy functionality. We could create a utility-type class and give it a static copy function, however, I try to refrain from creating utility/helper-type classes as much as possible. For now, I'll create a new class <code>CopyFileService.java</code> and move the whole copy method over to this class. If you're using an IDE like Eclipse or Intellij, you'll probably notice that this method depends on another method, <code>verifyFile</code>. We should go ahead and move this method over as well.</p>
@@ -96,57 +100,78 @@
 <p>The next thing to be refactored will be the playlist processing methods, but that will come in a later article because this refactoring will have the potential to change how the program processes the data and is deserving of an article all its own. We'll also start looking into writing some tests to help make sure everything is working the way it is expected to. Keep an eye out for those in the coming days and weeks. These changes are located in the GitHub <a href="https://github.com/joelforjava/carmix-collector/tree/8431630ab64bb60542b37240267cdb52eb1e70f6">repo</a>.</p>
 <p>So, this has been a first attempt at refactoring, more specifically the technique called <a href="https://refactoring.com/catalog/extractClass.html">Extract Class</a>. I hope it has proved useful if you're new to refactoring or just needed a quick refresher for this particular technique.</p>
 </p>
+				</article>
 
 	<hr />
 	
-		</div>
-		<div id="push"></div>
-    
-    <div class="ui inverted vertical footer segment">
-      <div class="ui center aligned container">
-        <div class="ui stackable inverted divided grid">
-          <div class="seven wide column">
-            <h4 class="ui inverted header">Find Me Online</h4>
-            <div class="ui inverted horizontal link list">
-              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
-              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
-              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="ui inverted section divider"></div>
-        <div class="ui horizontal inverted small divided link list">
-          <p class="item">&copy; 2019</p>
-          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
-          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
-        </div>
-      </div>
-    </div>
+				</div>
+			</div>
+		<!-- Sidebar -->
+			<div id="sidebar">
 
+				<!-- Logo -->
+					<h1 id="logo">
+						<a href="../../../../index.html">Joel for Java</a>
+					</h1>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul>
+							<li><a href="../../../../index.html">Home</a></li>
+							<li><a href="../../../../archive.html">Archives</a></li>
+							<li><a href="../../../../about.html">About</a></li>
+							<li><a href="../../../../feed.xml">Subscribe (RSS)</a></li>
+							<li><a href="../../../../feed.json">Subscribe (JSON Feed)</a></li>
+						</ul>
+					</nav>
+
+				<!-- Text -->
+					<section class="box text-style1">
+						<div class="inner">
+							<p>
+								Wouldn't an <strong>ad</strong> look fantastic here?
+							</p>
+						</div>
+					</section>
+
+				<!-- Recent Posts -->
+					<section class="box recent-posts">
+						<header>
+							<h2>Recent Posts</h2>
+						</header>
+						<ul>
+                                 
+                                <li><a href="../../../../blog/2019/10/12/adding-connect-configkey-builder.html">Creating a Builder for the Kafka Connect ConfigKey Class</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html">Adding Configuration Recommendations to the Kafka Kinesis Connector</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html">Adding Configuration Validation to the Kafka Kinesis Connector</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/09/28/my-kafka-connect-woes.html">My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</a></li>
+                                						</ul>
+					</section>
+
+				<!-- Copyright -->
+					<ul id="copyright">
+						<li>&copy; 2016 - 2019</li>
+                        <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        <li>Baked with <a href="http://jbake.org">JBake v2.6.4</a></li>
+					</ul>
+
+			</div>
+
+
+
+		<!-- Scripts -->
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../../../../js/jquery-1.11.1.min.js"></script>
-    <script src="../../../../js/semantic.min.js"></script>
-    <script src="../../../../js/prettify.js"></script>
-    <script>
-      $(document)
-          .ready(function() {
+			<script src="../../../../js/jquery.min.js"></script>
+			<script src="../../../../js/browser.min.js"></script>
+			<script src="../../../../js/breakpoints.min.js"></script>
+			<script src="../../../../js/util.js"></script>
+			<script src="../../../../js/main.js"></script>
+      		<script src="../../../../js/prettify.js"></script>
 
-            // fix menu when passed
-            $('.masthead')
-              .visibility({
-                once: false,
-                onBottomPassed: function() {
-                  $('.fixed.menu').transition('fade in');
-                },
-                onBottomPassedReverse: function() {
-                  $('.fixed.menu').transition('fade out');
-                }
-              })
-            ;
-          })
-        ;
-      </script>
-  </body>
+	</body>
 </html>

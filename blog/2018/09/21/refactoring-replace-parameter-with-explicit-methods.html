@@ -9,20 +9,19 @@
       gtag('js', new Date());
 
       gtag('config', 'UA-148165040-1');
-    </script>
-
+    </script>    
     <meta charset="utf-8"/>
     <title>Refactoring: Replace Parameter With Explicit Methods</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="">
     <meta name="author" content="">
     <meta name="keywords" content="">
     <meta name="generator" content="JBake">
 
     <!-- Le styles -->
-    <link href="../../../../css/semantic.min.css" rel="stylesheet">
     <link href="../../../../css/asciidoctor.css" rel="stylesheet">
-    <link href="../../../../css/base.css" rel="stylesheet">
+    <link href="../../../../css/main.css" rel="stylesheet">
+    <link href="../../../../css/custom.css" rel="stylesheet">
     <link href="../../../../css/prettify.css" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -37,34 +36,39 @@
     <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
     <link rel="shortcut icon" href="../../../../favicon.ico">
   </head>
-  <body onload="prettyPrint()">
+  <body class="is-preload" onload="prettyPrint()">
+		<!-- Content -->
+			<div id="content">
+				<div class="inner">
 	
-	<!-- Fixed navbar -->
-    <div class="ui fixed inverted menu">
-        <div class="ui container">
-          <a class="header item" href="../../../../index.html"><img class="logo" src="/images/joelforjava-icon.jpeg"> Joel for Java</a>
-        <a class="item" href="../../../../index.html"><i class="icon home"></i> Home</a>
-        <a class="item" href="../../../../about.html">About</a>
-        <div class="ui simple dropdown item">
-          <i class="icon rss"></i> Subscribe <i class="dropdown icon"></i>
-          <div class="menu">
-            <a class="item" href="../../../../feed.xml">RSS</a>
-            <a class="item" href="../../../../feed.json">JSON Feed</a>
-          </div>
-        </div>
-        </div>
-    </div>
-    <div class="ui main container">
-	<h1 class="ui header">
-		Refactoring: Replace Parameter With Explicit Methods
-		<div class="sub header">
-		21 September 2018
+			<!-- Post -->
+				<article class="box post">
+					<header>
+						<!--
+							Note: Titles and subtitles will wrap automatically when necessary, so don't worry
+							if they get too long. You can also remove the <p> entirely if you don't
+							need a subtitle.
+						-->
 
-		</div>
-	</h1>
+						<h2>Refactoring: Replace Parameter With Explicit Methods</h2>
+						<p>21 September 2018</p> 
+					</header>
 
+					<div class="info">
+						<!--
+							Note: The date should be formatted exactly as it's shown below. In particular, the
+							"least significant" characters of the month should be encapsulated in a <span>
+							element to denote what gets dropped in 1200px mode (eg. the "uary" in "January").
+							Oh, and if you don't need a date for a particular page or post you can simply delete
+							the entire "date" element.
 
-	<p><p>As I continue to refactor and refine my <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-collector</a> project, I've come across a method that I really don't like. It looks too busy and depends on two separate parameters to determine what work should be done inside the method. Here's the method as it currently exists:</p>
+						-->
+						<span class="date"><span class="month">Sep<span>tember</span></span> <span class="day">21</span><span class="year">, 2018</span></span>
+						<!--
+							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
+						-->
+					</div>
+					<p><p>As I continue to refactor and refine my <a href="/blog/2018/04/19/introducing-carmix-collector-project.html">carmix-collector</a> project, I've come across a method that I really don't like. It looks too busy and depends on two separate parameters to determine what work should be done inside the method. Here's the method as it currently exists:</p>
 <?prettify?>
 <pre><code>private static boolean verifyFile(Path aPath, String indFileDir, String indReadWrite) throws IOException {
     if (!Files.exists(aPath)) {
@@ -155,57 +159,78 @@ public static boolean isDirectory(Path path) throws IOException {
 After thought: In the updated code, there's a problem with the call to `canWrite`. If you notice the accompanying call to `verifyFile` it uses `inPath`, where it should be calling `outPath`. However, using `outPath` causes no files to be copied. It's a bug I'll need to come back and figure out at a later time and is likely related to what I just mentioned about checking for existence in the call to `isWritable`. For the time being, I'll leave the call to `canWrite` commented out and will likely remove it in the future since it really doesn't make much sense to check if a non-existing file can be written to.
 </aside>
 </p>
+				</article>
 
 	<hr />
 	
-		</div>
-		<div id="push"></div>
-    
-    <div class="ui inverted vertical footer segment">
-      <div class="ui center aligned container">
-        <div class="ui stackable inverted divided grid">
-          <div class="seven wide column">
-            <h4 class="ui inverted header">Find Me Online</h4>
-            <div class="ui inverted horizontal link list">
-              <a href="https://github.com/joelforjava" target="_blank" class="item"><i class="icon github"></i></a>
-              <a href="https://twitter.com/joelforjava" target="_blank" class="item"><i class="icon twitter"></i></a>
-              <a href="https://joelforjava.tumblr.com/" target="_blank" class="item"><i class="icon tumblr"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="ui inverted section divider"></div>
-        <div class="ui horizontal inverted small divided link list">
-          <p class="item">&copy; 2019</p>
-          <p class="item">Mixed with <a href="http://semantic-ui.com/">Semantic UI v2.4.1</a></p>
-          <p class="item">Baked with <a href="http://jbake.org">JBake v2.6.4</a></p>
-        </div>
-      </div>
-    </div>
+				</div>
+			</div>
+		<!-- Sidebar -->
+			<div id="sidebar">
 
+				<!-- Logo -->
+					<h1 id="logo">
+						<a href="../../../../index.html">Joel for Java</a>
+					</h1>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul>
+							<li><a href="../../../../index.html">Home</a></li>
+							<li><a href="../../../../archive.html">Archives</a></li>
+							<li><a href="../../../../about.html">About</a></li>
+							<li><a href="../../../../feed.xml">Subscribe (RSS)</a></li>
+							<li><a href="../../../../feed.json">Subscribe (JSON Feed)</a></li>
+						</ul>
+					</nav>
+
+				<!-- Text -->
+					<section class="box text-style1">
+						<div class="inner">
+							<p>
+								Wouldn't an <strong>ad</strong> look fantastic here?
+							</p>
+						</div>
+					</section>
+
+				<!-- Recent Posts -->
+					<section class="box recent-posts">
+						<header>
+							<h2>Recent Posts</h2>
+						</header>
+						<ul>
+                                 
+                                <li><a href="../../../../blog/2019/10/12/adding-connect-configkey-builder.html">Creating a Builder for the Kafka Connect ConfigKey Class</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/08/adding-config-recommenders-to-kafka-kinesis-connector.html">Adding Configuration Recommendations to the Kafka Kinesis Connector</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/02/adding-config-validation-to-kafka-kinesis-connector.html">Adding Configuration Validation to the Kafka Kinesis Connector</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/09/28/my-kafka-connect-woes.html">My Kafka Connect Woes When Updating the Kafka Kinesis Plugin</a></li>
+                                						</ul>
+					</section>
+
+				<!-- Copyright -->
+					<ul id="copyright">
+						<li>&copy; 2016 - 2019</li>
+                        <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        <li>Baked with <a href="http://jbake.org">JBake v2.6.4</a></li>
+					</ul>
+
+			</div>
+
+
+
+		<!-- Scripts -->
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="../../../../js/jquery-1.11.1.min.js"></script>
-    <script src="../../../../js/semantic.min.js"></script>
-    <script src="../../../../js/prettify.js"></script>
-    <script>
-      $(document)
-          .ready(function() {
+			<script src="../../../../js/jquery.min.js"></script>
+			<script src="../../../../js/browser.min.js"></script>
+			<script src="../../../../js/breakpoints.min.js"></script>
+			<script src="../../../../js/util.js"></script>
+			<script src="../../../../js/main.js"></script>
+      		<script src="../../../../js/prettify.js"></script>
 
-            // fix menu when passed
-            $('.masthead')
-              .visibility({
-                once: false,
-                onBottomPassed: function() {
-                  $('.fixed.menu').transition('fade in');
-                },
-                onBottomPassedReverse: function() {
-                  $('.fixed.menu').transition('fade out');
-                }
-              })
-            ;
-          })
-        ;
-      </script>
-  </body>
+	</body>
 </html>
