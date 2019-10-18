@@ -11,7 +11,7 @@
       gtag('config', 'UA-148165040-1');
     </script>    
     <meta charset="utf-8"/>
-    <title>Adding Filtering to the Kafka Kinesis Connector</title>
+    <title>A Tale of Two Git Repos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -50,8 +50,8 @@
 							need a subtitle.
 						-->
 
-						<h2>Adding Filtering to the Kafka Kinesis Connector</h2>
-						<p>26 September 2019</p> 
+						<h2>A Tale of Two Git Repos</h2>
+						<p>20 October 2019</p> 
 					</header>
 
 					<div class="info">
@@ -63,70 +63,13 @@
 							the entire "date" element.
 
 						-->
-						<span class="date"><span class="month">Sep<span>tember</span></span> <span class="day">26</span><span class="year">, 2019</span></span>
+						<span class="date"><span class="month">Oct<span>ober</span></span> <span class="day">20</span><span class="year">, 2019</span></span>
 						<!--
 							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
 						-->
 					</div>
-					<p><p>In a <a href="/blog/2019/09/22/customizing-kafka-kinesis-connector.html">previous post</a>, we made modifications to the Kafka-Kinesis Connector that allowed us to use multiple topics and multiple destinations with a single connector task. This time, we’ll go a bit further and add more functionality to the connector. What if we later ended up with a requirement that some of the data going through a topic had to be filtered out into additional destination firehoses?</p>
-<!--more-->
-<p>This scenario should be fairly easy to get set up in the YAML configuration. We’ll call the new section <code>filters</code> and then list the traits of these filters, such as listing the criteria that will cause a message to be filtered into the additional firehose destinations. The message can either start with certain phrases or contain specific keywords anywhere in the message. Matching either of these criteria will cause the message to be sent to the additional destination(s).</p>
-<pre class="prettyprint">
-    <code>
-- name: BIOMETRICS.TOPIC
-  destinations:
-    - BIOMETRICS-STREAM
-    - S3-BIOMETRICS-STREAM
-  filters:
-    - sourceTopic: BIOMETRICS.TOPIC
-      destinationStreamNames:
-        - BLOODPRESSURE-STREAM
-      keywords:
-        - Blood pressure
-        - Bloodpressure
-        - blood pressure
-    - sourceTopic: BIOMETRICS.TOPIC
-      destinationStreamNames:
-        - HEARTRATE-STREAM
-      startingPhrases:
-        - Heart rate
-    </code>
-</pre>
-<p>We’ll create an additional object to hold the Filter data and add logic that will  check to see if a message contains either a starting phrase or keywords as set in the configuration. We will also need to add additional logic to check for these keywords and starting phrases. If none of the values are found in a given message, then they do not go to the additional streams.</p>
-<?prettify?>
-<pre><code>data class StreamFilterMapping(var sourceTopic: String? = null,
-                            var destinationStreamNames: List&lt;String&gt;? = null,
-                            var keywords: List&lt;String&gt;? = null,
-                            var startingPhrases: List&lt;String&gt;? = null)
-</code></pre>
-<p>The updated logic will want to ensure it does not interfere with the existing logic and should only add new streams for filtered messages to the existing list of streams. If the topic doesn’t have filters configured or if the message does not meet filtering criteria, then the list should remain untouched.</p>
-<?prettify?>
-<pre><code>List&lt;StreamFilterMapping&gt; filterMappings = filters.get(topic);
-if (filterMappings != null &amp;&amp; !filterMappings.isEmpty()) {
-    boolean found = false;
-    final String val = new String((byte[])sinkRecord.value());
-    for (StreamFilterMapping filter : filterMappings) {
-        List&lt;String&gt; keywords = Optional.ofNullable(filter.getKeywords())
-                                        .orElse(Collections.emptyList());
-        List&lt;String&gt; phrases = Optional.ofNullable(filter.getStartingPhrases())
-                                        .orElse(Collections.emptyList());
-
-        if (keywords.stream().anyMatch(val::contains)
-                || phrases.stream().anyMatch(s -&gt; val.startsWith(&quot;{\&quot;message\&quot;:\&quot;&quot;+s))) {
-            if (filter.getDestinationStreamNames() != null) {
-                streams.addAll(filter.getDestinationStreamNames());
-                found = true;
-            }
-        }
-
-        if (!found) {
-            log.debug(&quot;No additional streams found via filter for Topic '{}' with Message: {}.&quot;, topic, val);
-        }
-    }
-}
-</code></pre>
-<p>Here, we make use of <code>Optional</code>s to return an empty list in the event that either the keywords or starting phrases collections are <code>null</code>. This helps the logic for verifying the message fairly small. We also make use of the Streams API to search the lists for any configured keywords or phrases. If found, we add the related destination streams to the existing stream list and continue as before.</p>
-<p>This brings us to the end of the article. We walked through how to add additional functionality to the Kafka Kinesis Connector in the form of filtering messages to send them to additional Firehoses. Next, I plan on cleaning the code up a bit, such as renaming the confusingly similar putRecordBatch, putBatch, etc. Hopefully we will also walk through various ways to test it, including unit tests and possibly integration &amp; functional tests.</p>
+					<p><p>When I started out writing the series of articles regarding Kafka Connect and the Kafka Kinesis Connector, I originally forked the one from AWSLabs and I used that fork for all my modifications and originally intended to use it for all of my articles. However, as I progressed through writing them, I realized I might want to submit some of those things for a pull request to the original repo. I didn't want to add the mess of the YAML and multiple destinations to their code. I didn't want to taint their codebase. So, I made a complete copy of that fork and put it into a new repository so that I could continue to do my articles and experimentations with multiple destinations, etc. I'll eventually yank all of my changes out of my fork and only submit the things I hope others would find useful, such as the config validations.</p>
+<p>So if you're ever looking through my github repos and see the two Kafka Kinesis Connector repositories, there's the logic behind them. I apologize if it has caused any confusion.</p>
 </p>
 				</article>
 
