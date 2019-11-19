@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>    
+    <meta charset="utf-8"/>
+    <title>Parsing YAML Using Kotlin Objects</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../../css/main.css" rel="stylesheet">
+    <link href="../../../../css/custom.css" rel="stylesheet">
+    <link href="../../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../../favicon.ico">
+  </head>
+  <body class="is-preload" onload="prettyPrint()">
+		<!-- Content -->
+			<div id="content">
+				<div class="inner">
+	
+			<!-- Post -->
+				<article class="box post">
+					<header>
+						<!--
+							Note: Titles and subtitles will wrap automatically when necessary, so don't worry
+							if they get too long. You can also remove the <p> entirely if you don't
+							need a subtitle.
+						-->
+
+						<h2>Parsing YAML Using Kotlin Objects</h2>
+					</header>
+
+					<div class="info">
+						<!--
+							Note: The date should be formatted exactly as it's shown below. In particular, the
+							"least significant" characters of the month should be encapsulated in a <span>
+							element to denote what gets dropped in 1200px mode (eg. the "uary" in "January").
+							Oh, and if you don't need a date for a particular page or post you can simply delete
+							the entire "date" element.
+
+						-->
+						<span class="date"><span class="month">Nov<span>ember</span></span> <span class="day">19</span><span class="year">, 2019</span></span>
+						<!--
+							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
+						-->
+					</div>
+					<p><p>When I set out to customize the Kafka-Kinesis Connector to read in a <a href="/blog/2019/09/22/customizing-kafka-kinesis-connector.html">YAML configuration</a> for use by the connector, I decided to go with Kotlin data classes to hold that configuration. The initial versions of these classes aren’t as good as I think they could be, though. For example, all of these data classes make use of <code>var</code>s rather than <code>val</code>s. I’d much rather stick to <code>val</code>s whenever possible due to the fact that they're read-only and cannot be changed once set.</p>
+<p>The initial data classes also all use optional (nullable) types for every field. I’d prefer using non-optionals when I can and when I know that certain values should always be non-null, such as the topic or destination stream names. Even for the 'optional' items, like <code>filters</code>, I'd still prefer to return an empty list rather than <code>null</code>. These data classes were all created this way because it was the quickest way I could get it all to work together and, at the time, all I wanted was something that worked. So this is me coming back to see what I can do to make these classes better, if anything.</p>
+<!--more-->
+<p>This is the first version of the <code>DestinationStreamMapping</code> class:</p>
+<?prettify?>
+<pre><code>data class DestinationStreamMapping(var name: String? = null, 
+	                            var destinations: List&lt;String&gt;? = null, 
+	                            var fiters: List&lt;StreamFilterMapping&gt;? = null)
+</code></pre>
+<p>What I would like to end up with is something like this:</p>
+<?prettify?>
+<pre><code>data class DestinationStreamMapping(val name: String, 
+	                            val destinations: List&lt;String&gt;, 
+	                            val fiters: List&lt;StreamFilterMapping&gt;)
+</code></pre>
+<p>You may be thinking there isn't much of a difference between the two, however, <code>val</code>s can only be assigned once and are therefore read-only. I tend to err on the side of read-only and as-close-to immutable wherever possible.</p>
+<p>Is this attainable using <a href="https://bitbucket.org/asomov/snakeyaml/wiki/Home">SnakeYAML</a> to parse my YAML files? Let's find out! While working on this, I came across an <a href="https://www.mkammerer.de/blog/snakeyaml-and-kotlin">article</a> that tried to attain this and failed. That article ultimately suggested going with Jackson, and maybe that's the way to go. However, I want to see if it is at all possible to use the desired data classes with YAML. Will it even be YAML we want to use?</p>
+<p>For these tests, I'll be using a project that contains a different set of Kotlin and YAML files, which reference Bands, their albums, and their songs. This project is available on <a href="https://github.com/joelforjava/polyglot-jvm-yaml-parsing-examples">GitHub</a>. It has 4 kotlin files inside the <code>kotlin-objects</code> sub-project, <code>try_1.kt</code> up to <code>try_4.kt</code> that contain the different data class implementations.</p>
+<p>Here is an example of a YAML file we will be attempting to parse:</p>
+<?prettify?>
+<pre><code>name: Fleetwood Mac
+albums:
+  - name: Rumours
+    releaseYear: 1977
+    label: Warner Bros.
+    tracks:
+      - Second Hand News
+      - Dreams
+  - name: Fleetwood Mac
+    releaseYear: 1975
+    label: Reprise
+    tracks:
+      - Monday Morning
+      - Warm Ways
+</code></pre>
+<p>And here's our beginning Band data classes as they exist in <code>try_1.kt</code>:</p>
+<?prettify?>
+<pre><code>data class Band(var name: String? = null, var albums: List&lt;Album&gt;? = null)
+
+data class Album(var name: String? = null,
+             var releaseYear: Int? = null,
+             var label: String? = null,
+             var tracks: List&lt;Song&gt;? = null)
+
+data class Song(var name: String? = null)
+</code></pre>
+<p>These classes all use vars and have null defaults. This causes a default constructor to be created and therefore SnakeYAML will be able to parse the YAML into these data classes.</p>
+<p>The first step I took in refining these classes was to replace <code>var</code>s with <code>val</code>s in one of the data classes. Doing this causes the tests all fail due to the now lack of setters for that class. There is a way around this, though, if you change the bean access to <code>BeanAccess.FIELD</code> instead of <code>BeanAccess.DEFAULT</code>, which uses JavaBean properties and public fields. If you run the test <code>parseYamlAsUsingFieldAccess function can load YAML into Band classes that use vals</code> after making this change in the <code>parseYamlAs</code> function (I created a new function, <code>parseYamlAsUsingFieldAccess</code>), then all the tests should pass again. These class definitions are present in <code>try_2.kt</code>.</p>
+<p>As for the non-null fields, as long as you use something like an empty string for the initializer, you can switch from <code>String?</code> to <code>String</code>.</p>
+<p>So, now we have the following data classes from <code>try_3.kt</code>:</p>
+<?prettify?>
+<pre><code>data class Band3(val name: String = &quot;&quot;, val albums: List&lt;Album3&gt; = emptyList())
+
+data class Album3(val name: String = &quot;&quot;,
+                  val releaseYear: Int = 0,
+                  val label: String = &quot;&quot;,
+                  val tracks: List&lt;Song3&gt; = emptyList())
+
+data class Song3(val name: String = &quot;&quot;)
+</code></pre>
+<p>And this is the function used to parse the YAML:</p>
+<?prettify?>
+<pre><code>fun &lt;T&gt; parseYamlAsUsingFieldAccess(fileUrl: String, clazz: Class&lt;T&gt;): T? {
+    var mapping: T? = null
+    val inputStream = loadResourceAsStream(fileUrl) ?: return mapping
+    BufferedInputStream(inputStream).use { bis -&gt;
+        val yaml = Yaml()
+        yaml.setBeanAccess(BeanAccess.FIELD)
+        mapping = yaml.loadAs(bis, clazz)
+    }
+    return mapping
+}
+</code></pre>
+<p>My next step was to eliminate the default values. This took a bit of work to find a YAML format that would parse correctly into these classes. And while I did manage to make it work with the above parse function, you'll soon see that the <code>clazz</code> parameter is redundant when presented with the final YAML, so I wrote a new, very similar method to handle the parsing.</p>
+<?prettify?>
+<pre><code>data class Band4(val name: String, val albums: List&lt;Album4&gt;)
+
+data class Album4(val name: String,
+                  val releaseYear: Int,
+                  val label: String,
+                  val tracks: List&lt;Song4&gt;)
+
+data class Song4(val name: String)
+</code></pre>
+<p>Prior to this, I did not realize that you can add type information to your YAML definitions. This is the approach I found myself taking with these last data classes. There seemed to be no other way to get SnakeYAML to parse data into these classes.</p>
+<p>This is the YAML that ultimately worked with the desired classes:</p>
+<?prettify?>
+<pre><code>!!com.joelforjava.kotlin.Band4
+- Led Zeppelin
+- !!java.util.List
+  - !!com.joelforjava.kotlin.Album4
+    - Houses of the Holy
+    - 1973
+    - Atlantic
+    - !!java.util.List
+      - !!com.joelforjava.kotlin.Song4 No Quarter
+      - !!com.joelforjava.kotlin.Song4 Over the Hills and Far Away
+  - !!com.joelforjava.kotlin.Album4
+    - Physical Grafitti
+    - 1975
+    - Atlantic
+    - !!java.util.List
+      - !!com.joelforjava.kotlin.Song4 Kashmir
+      - !!com.joelforjava.kotlin.Song4 Houses of the Holy
+</code></pre>
+<p>Here is the function used to load this Yaml:</p>
+<?prettify?>
+<pre><code>// This will only work when the YAML has type information
+fun &lt;T&gt; parseYaml(fileUrl: String): T? {
+    var mapping: T? = null
+    val inputStream = loadResourceAsStream(fileUrl) ?: return mapping
+    BufferedInputStream(inputStream).use { bis -&gt;
+        val yaml = Yaml()
+        mapping = yaml.load(bis) as T
+    }
+    return mapping
+}
+</code></pre>
+<p>So, was it possible to get SnakeYAML to load a YAML definition into my desired data class setup? Yes. Would I want to use this YAML? That's a no from me. Ultimately, it depends on your use case and preferred programming style. If you are ok with default values, you could stick with SnakeYAML, which was demonstrated earlier. Or, if you simply must have no defaults, your best bet is using Jackson, which is discussed further in another <a href="https://www.mkammerer.de/blog/snakeyaml-and-kotlin">blog</a>.</p>
+<p>I may do more with SnakeYAML and other languages to see how they stack up. Stay tuned!</p>
+</p>
+				</article>
+
+	<hr />
+	
+				</div>
+			</div>
+		<!-- Sidebar -->
+			<div id="sidebar">
+
+				<!-- Logo -->
+					<h1 id="logo">
+						<a href="../../../../index.html">Joel for Java</a>
+					</h1>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul>
+							<li ><a href="../../../../index.html">Home</a></li>
+							<li ><a href="../../../../archive.html">Archives</a></li>
+							<li ><a href="../../../../about.html">About</a></li>
+							<li><a href="../../../../feed.xml">Subscribe (RSS)</a></li>
+							<li><a href="../../../../feed.json">Subscribe (JSON Feed)</a></li>
+						</ul>
+					</nav>
+
+				<!-- Text -->
+					<section class="box text-style1">
+						<div class="inner">
+							<p>
+								Wouldn't an <strong>ad</strong> look fantastic here?
+							</p>
+						</div>
+					</section>
+
+				<!-- Recent Posts -->
+					<section class="box recent-posts">
+						<header>
+							<h2>Recent Posts</h2>
+						</header>
+						<ul>
+                                 
+                                <li><a href="../../../../blog/2019/11/19/parsing-yaml-using-kotlin-objects.html">Parsing YAML Using Kotlin Objects</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html">Adding SSL Encryption Configuration to Kafka Connectors</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/20/a-tale-of-two-repos.html">A Tale of Two Git Repos</a></li>
+                                 
+                                <li><a href="../../../../blog/2019/10/12/adding-connect-configkey-builder.html">Creating a Builder for the Kafka Connect ConfigKey Class</a></li>
+                                						</ul>
+					</section>
+
+				<!-- Copyright -->
+					<ul id="copyright">
+						<li>&copy; 2016 - 2019</li>
+                        <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        <li>Baked with <a href="http://jbake.org">JBake v2.6.4</a></li>
+					</ul>
+
+			</div>
+
+
+
+		<!-- Scripts -->
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+			<script src="../../../../js/jquery.min.js"></script>
+			<script src="../../../../js/browser.min.js"></script>
+			<script src="../../../../js/breakpoints.min.js"></script>
+			<script src="../../../../js/util.js"></script>
+			<script src="../../../../js/main.js"></script>
+      		<script src="../../../../js/prettify.js"></script>
+
+	</body>
+</html>

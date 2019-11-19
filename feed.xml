@@ -6,9 +6,22 @@
     <atom:link href="https://joelforjava.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>JBake Bootstrap Template</description>
     <language>en-gb</language>
-    <pubDate>Tue, 29 Oct 2019 18:32:25 -0400</pubDate>
-    <lastBuildDate>Tue, 29 Oct 2019 18:32:25 -0400</lastBuildDate>
+    <pubDate>Tue, 19 Nov 2019 18:16:39 -0500</pubDate>
+    <lastBuildDate>Tue, 19 Nov 2019 18:16:39 -0500</lastBuildDate>
 
+    <item>
+      <title>Parsing YAML Using Kotlin Objects</title>
+      <link>https://joelforjava.com/blog/2019/11/19/parsing-yaml-using-kotlin-objects.html</link>
+      <pubDate>Tue, 19 Nov 2019 00:00:00 -0500</pubDate>
+      <guid isPermaLink="false">blog/2019/11/19/parsing-yaml-using-kotlin-objects.html</guid>
+      	<description>
+	&lt;p&gt;When I set out to customize the Kafka-Kinesis Connector to read in a &lt;a href=&quot;/blog/2019/09/22/customizing-kafka-kinesis-connector.html&quot;&gt;YAML configuration&lt;/a&gt; for use by the connector, I decided to go with Kotlin data classes to hold that configuration. The initial versions of these classes aren’t as good as I think they could be, though. For example, all of these data classes make use of &lt;code&gt;var&lt;/code&gt;s rather than &lt;code&gt;val&lt;/code&gt;s. I’d much rather stick to &lt;code&gt;val&lt;/code&gt;s whenever possible due to the fact that they&apos;re read-only and cannot be changed once set.&lt;/p&gt;
+&lt;p&gt;The initial data classes also all use optional (nullable) types for every field. I’d prefer using non-optionals when I can and when I know that certain values should always be non-null, such as the topic or destination stream names. Even for the &apos;optional&apos; items, like &lt;code&gt;filters&lt;/code&gt;, I&apos;d still prefer to return an empty list rather than &lt;code&gt;null&lt;/code&gt;. These data classes were all created this way because it was the quickest way I could get it all to work together and, at the time, all I wanted was something that worked. So this is me coming back to see what I can do to make these classes better, if anything.&lt;/p&gt;
+
+	</description>
+      <category>kotlin</category>
+      <category>yaml</category>
+    </item>
     <item>
       <title>Adding SSL Encryption Configuration to Kafka Connectors</title>
       <link>https://joelforjava.com/blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html</link>
