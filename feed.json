@@ -6,6 +6,16 @@
     "description": "A site for all things Java",
     "items": [
         {
+            "id": "https://joelforjava.com/blog/2019/11/27/using-assume-role-with-aws-sdk.html",
+            "title": "Using AssumeRole with the AWS Java SDK",
+            "url": "https://joelforjava.com/blog/2019/11/27/using-assume-role-with-aws-sdk.html"
+            "date_published": "2019-11-27T00:00:00-0500",
+            "content_html": "&lt;p&gt;When working in AWS, AssumeRole allows you to have access to resources to which you might not normally have access. Some use cases for using AssumeRole is for cross-account access, or in my case, developing locally. Using AssumeRole lets me grant my local code permissions as per those provided by the role to which you&apos;re assuming, such as DynamoDB, RedShift, or S3 access.&lt;/p&gt;
+&lt;p&gt;When I first found myself needing to this, I found several tutorials in the AWS documentation that showcased several types of credential usages, such as &lt;a href=&quot;https://docs.aws.amazon.com/AmazonS3/latest/dev/AuthUsingTempFederationTokenJava.html&quot;&gt;federated credentials&lt;/a&gt; and &lt;a href=&quot;https://docs.aws.amazon.com/AmazonS3/latest/dev/AuthUsingTempSessionTokenJava.html&quot;&gt;temporary credentials&lt;/a&gt;. but I never found a similar tutorial for using AssumeRole. I assume the documentation exists, I just didn&apos;t find it in the time I had to work on my code. So, here&apos;s how I went about implementing AssumeRole in Java using version &lt;code&gt;1.11.622&lt;/code&gt;.&lt;/p&gt;
+",
+            "tags": [ "aws",   "java" ]
+        }, 
+        {
             "id": "https://joelforjava.com/blog/2019/11/19/parsing-yaml-using-kotlin-objects.html",
             "title": "Parsing YAML Using Kotlin Objects",
             "url": "https://joelforjava.com/blog/2019/11/19/parsing-yaml-using-kotlin-objects.html"

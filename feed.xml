@@ -6,9 +6,22 @@
     <atom:link href="https://joelforjava.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>JBake Bootstrap Template</description>
     <language>en-gb</language>
-    <pubDate>Tue, 19 Nov 2019 18:16:39 -0500</pubDate>
-    <lastBuildDate>Tue, 19 Nov 2019 18:16:39 -0500</lastBuildDate>
+    <pubDate>Wed, 27 Nov 2019 09:02:50 -0500</pubDate>
+    <lastBuildDate>Wed, 27 Nov 2019 09:02:50 -0500</lastBuildDate>
 
+    <item>
+      <title>Using AssumeRole with the AWS Java SDK</title>
+      <link>https://joelforjava.com/blog/2019/11/27/using-assume-role-with-aws-sdk.html</link>
+      <pubDate>Wed, 27 Nov 2019 00:00:00 -0500</pubDate>
+      <guid isPermaLink="false">blog/2019/11/27/using-assume-role-with-aws-sdk.html</guid>
+      	<description>
+	&lt;p&gt;When working in AWS, AssumeRole allows you to have access to resources to which you might not normally have access. Some use cases for using AssumeRole is for cross-account access, or in my case, developing locally. Using AssumeRole lets me grant my local code permissions as per those provided by the role to which you&apos;re assuming, such as DynamoDB, RedShift, or S3 access.&lt;/p&gt;
+&lt;p&gt;When I first found myself needing to this, I found several tutorials in the AWS documentation that showcased several types of credential usages, such as &lt;a href=&quot;https://docs.aws.amazon.com/AmazonS3/latest/dev/AuthUsingTempFederationTokenJava.html&quot;&gt;federated credentials&lt;/a&gt; and &lt;a href=&quot;https://docs.aws.amazon.com/AmazonS3/latest/dev/AuthUsingTempSessionTokenJava.html&quot;&gt;temporary credentials&lt;/a&gt;. but I never found a similar tutorial for using AssumeRole. I assume the documentation exists, I just didn&apos;t find it in the time I had to work on my code. So, here&apos;s how I went about implementing AssumeRole in Java using version &lt;code&gt;1.11.622&lt;/code&gt;.&lt;/p&gt;
+
+	</description>
+      <category>aws</category>
+      <category>java</category>
+    </item>
     <item>
       <title>Parsing YAML Using Kotlin Objects</title>
       <link>https://joelforjava.com/blog/2019/11/19/parsing-yaml-using-kotlin-objects.html</link>
