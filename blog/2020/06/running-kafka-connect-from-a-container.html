@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>    
+    <meta charset="utf-8"/>
+    <title>Running a Kafka Connector Inside a Container (Docker)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../css/main.css" rel="stylesheet">
+    <link href="../../../css/custom.css" rel="stylesheet">
+    <link href="../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../favicon.ico">
+  </head>
+  <body class="is-preload" onload="prettyPrint()">
+		<!-- Content -->
+			<div id="content">
+				<div class="inner">
+	
+			<!-- Post -->
+				<article class="box post">
+					<header>
+						<!--
+							Note: Titles and subtitles will wrap automatically when necessary, so don't worry
+							if they get too long. You can also remove the <p> entirely if you don't
+							need a subtitle.
+						-->
+
+						<h2>Running a Kafka Connector Inside a Container (Docker)</h2>
+					</header>
+
+					<div class="info">
+						<!--
+							Note: The date should be formatted exactly as it's shown below. In particular, the
+							"least significant" characters of the month should be encapsulated in a <span>
+							element to denote what gets dropped in 1200px mode (eg. the "uary" in "January").
+							Oh, and if you don't need a date for a particular page or post you can simply delete
+							the entire "date" element.
+
+						-->
+						<span class="date"><span class="month">Jun<span>e</span></span> <span class="day">08</span><span class="year">, 2020</span></span>
+						<!--
+							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
+						-->
+					</div>
+					<p><p>Everywhere you look these days in the software development world, you'll find containers in use in a variety of situations and by a vast number of developers and companies. <a href="https://www.docker.com/resources/what-container">This article</a> from Docker does a good job of explaining containers. However, containers go far beyond Docker, including <a href="https://kubernetes.io">Kubernetes</a>, <a href="https://podman.io/">Podman</a>, <a href="http://mesos.apache.org">Apache Mesos</a>, and <a href="https://docs.openshift.com/container-platform/4.4/welcome/index.html">Red Hat OpenShift Container Platform</a> among others.</p>
+<p>I'm planning on writing a series of articles that go through various stages of deploying Kafka Connect in a containerized environment. For this article, I plan on getting to the point of deploying a multi-node distributed connector using docker. I will use one source connector in standalone mode that will be used to populate a Kafka topic with data and I will deploy a sink connector in distributed mode to pull the data back out.</p>
+<p>Later articles will explore deploying other sink connectors in distributed mode, including the Kafka-Kinesis Connector, via containers. For this article, I will be using <a href="https://www.docker.com">Docker</a> via <a href="https://docs.docker.com/compose/">Docker Compose</a>. I am hoping to look more into Podman and attempt deployment via Kubernetes in future articles. I am by no means an expert in any container technology, but I can mostly get around using containers in Docker. So, this is a learning experience on multiple fronts for me.</p>
+<!--more-->
+<h3>Picking a Kafka Container</h3>
+<p>For starters, we need a Kafka container! There are several to choose from, including <a href="https://github.com/wurstmeister/kafka-docker">wurstmeister/kafka-docker</a>, <a href="https://hub.docker.com/r/bitnami/kafka/">Bitnami</a>, and <a href="https://docs.confluent.io/current/quickstart/ce-docker-quickstart.html">Confluent</a>. I considered giving the Confluent version a try, but I'm not very familiar with the Confluent Platform and the Control Center, so I wasn't sure if there were any 'gotchas' when using it versus something like wurstmeister. Maybe I'll find the time to come back and give Confluent a better look in future articles. I decided to go with wurstmeister for this article.</p>
+<p>While researching this, I found an excellent <a href="https://dev.to/thegroo/kafka-connect-crash-course-1chd">dev.to article</a> that goes over how to deploy a connector in standalone mode. I used this as my starting point with the hopes that I would eventually end up with a container setup that would be usable to connect to virtually any Kafka broker and send data into Kinesis Firehose (for the Kafka-Kinesis Connector).</p>
+<h3>Step 1: Getting data into Kafka</h3>
+<p>I started out by cloning the repo from the previously referenced dev.to article:</p>
+<pre><code>git clone git@github.com:stockgeeks/docker-compose.git
+</code></pre>
+<p>I more or less ran the Docker Compose file as discussed in that article, by running <code>docker-compose up</code>. I then placed a file in the connect-input-file directory (in my case a codenarc Groovy config file). Running a console consumer showed the file being output back out.</p>
+<pre><code>$ docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic simple-connect --from-beginning
+</code></pre>
+<p>As I worked through the examples on this page, I decided to go back and create a <a href="https://github.com/joelforjava/kafka-connect-container-examples">separate project</a> that used the stockgeeks repo as the starting point. I will add to this repo as I try out different things and container technologies. You can checkout this repo by running <code>git clone git@github.com:joelforjava/kafka-connect-container-examples.git</code>. From this point forward, this is the project I will be using.</p>
+<h3>Step 2: Getting data back out of Kafka</h3>
+<p>Next, I wanted to run Kafka Connect in distributed mode, pulling that same data back out using the <code>FileStreamSinkConnector</code> sink connector. Rather than build on the existing docker setup, I decided to create a new <code>Dockerfile</code>, <code>docker-compose.yml</code>, and new configuration files for the sink connector inside of a new directory (<code>distributed-connector</code>) in an attempt to keep everything somewhat organized.</p>
+<p>This setup is shown in my <code>kafka-connect-container-examples</code> repo under the branch <code>step/2</code>.</p>
+<?prettify?>
+<pre><code>version: '3.3'
+
+services:
+
+  connect-distributed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: connect-distributed
+    ports:
+      - 18083:8083
+    volumes:
+      - ./connect-input-file:/tmp
+</code></pre>
+<p>In order for this container to interact with the already running Kafka broker, I will need to add this container to the existing network on which the kafka broker container is running. To do this, you will need to run <code>docker network ls</code> to get a list of networks used by your various containers.</p>
+<p>Your output will differ based on what containers you run and the networks you've previously created. Here's what my list looked like at the time:</p>
+<pre><code>NETWORK ID          NAME                                 DRIVER              SCOPE
+938a3db19507        bridge                               bridge              local
+cff74b7d60e4        build-system_sonarnet                bridge              local
+b93a229f4eb2        host                                 host                local
+da76ab07af40        kafka-connect-crash-course_default   bridge              local
+</code></pre>
+<p>In this case, <code>kafka-connect-crash-course_default</code> is the network created by the original (project root) <code>docker-compose.yml</code> file.</p>
+<p>Next, I had to bring up the <code>connect-distributed</code> service container, but not actually start it. Alternatively, I could've listed the network declaration in the Docker Compose file.</p>
+<pre><code>docker-compose up --no-start
+</code></pre>
+<p>Once the container is created, I can then run the following:</p>
+<pre><code>docker network connect kafka-connect-crash-course_default connect-distributed
+</code></pre>
+<p>Once you've connected the container with the sink connector (<code>connect-distributed</code>) to the network, you can start up the service by running the <code>docker-connect up</code> command. You should then be able to query the REST API by running <code>curl http://localhost:18083/connectors</code> to get a list of currently running connectors, which should be an empty list.</p>
+<p>Next, I created a JSON file, which pulled properties from the <code>connect-file-sink.properties</code> file and used this to configure the connector instance:</p>
+<pre><code>curl -XPUT -H &quot;Content-Type: application/json&quot;  --data &quot;@distributed-connector/connect-file-sink.json&quot; http://localhost:18083/connectors/file-sink-connector/config | jq
+</code></pre>
+<p>If all goes well with the configuration, you should see an output similar to the following:</p>
+<?prettify?>
+<pre><code>{
+  &quot;name&quot;: &quot;file-sink-connector&quot;,
+  &quot;config&quot;: {
+    &quot;name&quot;: &quot;file-sink-connector&quot;,
+    &quot;connector.class&quot;: &quot;org.apache.kafka.connect.file.FileStreamSinkConnector&quot;,
+    &quot;tasks.max&quot;: &quot;1&quot;,
+    &quot;topics&quot;: &quot;simple-connect&quot;,
+    &quot;file&quot;: &quot;/tmp/my-output-file.txt&quot;,
+    &quot;key.converter&quot;: &quot;org.apache.kafka.connect.storage.StringConverter&quot;,
+    &quot;value.converter&quot;: &quot;org.apache.kafka.connect.storage.StringConverter&quot;
+  },
+  &quot;tasks&quot;: [
+    {
+      &quot;connector&quot;: &quot;file-sink-connector&quot;,
+      &quot;task&quot;: 0
+    }
+  ],
+  &quot;type&quot;: &quot;sink&quot;
+}
+</code></pre>
+<p>At this point, as long as data was already in the <code>simple-connect</code> topic, then you should see output in <code>distributed-connector/connect-output-file/my-output-file.txt</code>.</p>
+<h3>Step 3: Scaling up connect-distributed instances</h3>
+<p>For this step, I did a little cleanup with the Docker Compose files and all of the various plugin config files. This can be seen in the <code>step/3</code> branch. Before going any further, I had to run <code>docker-compose down</code> to ensure the containers from the previous step are removed. Failure to do this will cause conflicts when you go to start up the instances listed in this step. Alternatively, you could rename the containers in this step, but I chose to keep the existing names.</p>
+<p>I moved the 'standalone' config files into a new directory and renamed the directory used for the 'distributed' configuration files. I increased the <code>tasks.max</code> value to <code>3</code> in an effort to see the tasks distributed across the scaled-up instances.</p>
+<p>Now, we can finally take a look at the change required for the <code>connect-distributed</code> service.</p>
+<?prettify?>
+<pre><code>connect-distributed:
+  build:
+    context: ./distributed
+    dockerfile: Dockerfile
+  # container_name: connect-distributed
+  ports:
+    - 8083
+  depends_on:
+    - kafka
+  deploy:
+    replicas: 4
+  volumes:
+    - ./distributed/connect-output-file:/tmp
+</code></pre>
+<p>In order to scale out a docker compose service, you can't provide a hard-coded <code>container_name</code> value, so that part is commented out and should ultimately be removed. You also can't do an explicit port mapping, e.g. <code>18083:8083</code>, but you can use a port range, such as <code>&quot;18083-18093:8083&quot;</code>. In the example above, I let Docker assign the ports.</p>
+<p>The example also lists 4 <code>replicas</code>, but this setting is only valid in Swarm mode and is otherwise ignored. In version 2 of the docker compose files, there was a <code>scale</code> parameter that could be used but it does not have a true equivalent in version 3 unless you count the Swarm setting.</p>
+<p>For this step, I want to try running 3 instances of the connect-distributed service, so I enter the following command:</p>
+<pre><code>docker-compose up --scale connect-distributed=3
+</code></pre>
+<p>Soon, you should see logging outputs for the various services, including the 3 instances of the connect-distributed service.</p>
+<p>Whether or not you mapped a port range for the connect-distributed service, you should then check the containers to see what host ports were assigned to the instances.</p>
+<pre><code>docker ps 
+</code></pre>
+<p>You should see output similar to below:</p>
+<pre><code>CONTAINER ID        IMAGE                                COMMAND                  CREATED             STATUS              PORTS                                                NAMES
+cd7c061d9ef2        docker-compose_connect-distributed   &quot;start-kafka.sh&quot;         35 seconds ago      Up 34 seconds       0.0.0.0:32776-&gt;8083/tcp                              docker-compose_connect-distributed_3
+c4eb751169be        docker-compose_connect-distributed   &quot;start-kafka.sh&quot;         35 seconds ago      Up 34 seconds       0.0.0.0:32775-&gt;8083/tcp                              docker-compose_connect-distributed_1
+aa62908512ff        docker-compose_connect-standalone    &quot;start-kafka.sh&quot;         35 seconds ago      Up 34 seconds       0.0.0.0:8083-&gt;8083/tcp                               connect-standalone
+7722da0e7e48        docker-compose_connect-distributed   &quot;start-kafka.sh&quot;         35 seconds ago      Up 34 seconds       0.0.0.0:32774-&gt;8083/tcp                              docker-compose_connect-distributed_2
+</code></pre>
+<p>I've truncated the output to only show the connect containers. In this case, Docker assigned ports <code>32774</code> through <code>32776</code> to the scaled out connect-distributed services.</p>
+<p>Now you should be able to perform the steps as done in Step 2 for querying the Connect REST API and for pushing a configuration by making use of one of the mapped ports.</p>
+<p>Once the configuration is pushed, the <code>file-sink-connector</code> connector does its job and pulls the data from Kafka, saving the data to the <code>distributed/connect-output-file</code> directory. In addition, you can query Kafka using the Consumer Groups shell script to verify.</p>
+<pre><code>docker exec -it kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server kafka:9092 --describe --all-groups
+</code></pre>
+<p>For the new version of the simple-connect topic, we created 3 partitions and then set <code>tasks.max</code> in the sink connector to 3, which resulted in one task per container and the summary below:</p>
+<pre><code>    GROUP                       TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                                   HOST            CLIENT-ID
+connect-file-sink-connector simple-connect  1          4667            4667            0               connector-consumer-file-sink-connector-1-f009d64b-b2ad-42e9-be14-a77b9acfc6c0 /172.23.0.6     connector-consumer-file-sink-connector-1
+connect-file-sink-connector simple-connect  0          4666            4666            0               connector-consumer-file-sink-connector-0-e413eb56-30ec-4a3b-89fc-bf4b2aea01a9 /172.23.0.5     connector-consumer-file-sink-connector-0
+connect-file-sink-connector simple-connect  2          4667            4667            0               connector-consumer-file-sink-connector-2-c34e154b-8efb-4b41-aea0-a133a5f8556c /172.23.0.7     connector-consumer-file-sink-connector-2
+</code></pre>
+<p>This concludes, for now, my experiment to run a sink connector in distributed mode all via Docker. This should come in handy in helping to migrate some of our Kafka Connectors from Virtual Machines to containers. My next steps will most likely be either trying this with Kubernetes or trying to get another plugin working, such as the Kafka-Kinesis Connector or the Elasticsearch connector. I'm sure it'll be all of the above at some point. Thank you, if you've read this far. I hope this has been useful to someone.</p>
+</p>
+				</article>
+
+	<hr />
+	
+				</div>
+			</div>
+		<!-- Sidebar -->
+			<div id="sidebar">
+
+				<!-- Logo -->
+					<h1 id="logo">
+						<a href="../../../index.html">Joel for Java</a>
+					</h1>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul>
+							<li ><a href="../../../index.html">Home</a></li>
+							<li ><a href="../../../archive.html">Archives</a></li>
+							<li ><a href="../../../about.html">About</a></li>
+							<li><a href="../../../feed.xml">Subscribe (RSS)</a></li>
+							<li><a href="../../../feed.json">Subscribe (JSON Feed)</a></li>
+						</ul>
+					</nav>
+
+				<!-- Text -->
+					<section class="box text-style1">
+						<div class="inner">
+							<p>
+								<a href="https://twitter.com/search?q=%23blacklivesmatter" target="_blank">#BlackLivesMatter</a>
+							</p>
+						</div>
+					</section>
+
+				<!-- Recent Posts -->
+					<section class="box recent-posts">
+						<header>
+							<h2>Recent Posts</h2>
+						</header>
+						<ul>
+                                 
+                                <li><a href="../../../blog/2020/06/running-kafka-connect-from-a-container.html">Running a Kafka Connector Inside a Container (Docker)</a></li>
+                                 
+                                <li><a href="../../../blog/2019/11/27/using-assume-role-with-aws-sdk.html">Using AssumeRole with the AWS Java SDK</a></li>
+                                 
+                                <li><a href="../../../blog/2019/11/19/parsing-yaml-using-kotlin-objects.html">Parsing YAML Using Kotlin Objects</a></li>
+                                 
+                                <li><a href="../../../blog/2019/10/27/adding-ssl-encryption-to-kafka-connector.html">Adding SSL Encryption Configuration to Kafka Connectors</a></li>
+                                						</ul>
+					</section>
+
+				<!-- Copyright -->
+					<ul id="copyright">
+						<li>&copy; 2016 - 2020</li>
+                        <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        <li>Baked with <a href="http://jbake.org">JBake v2.6.4</a></li>
+					</ul>
+
+			</div>
+
+
+
+		<!-- Scripts -->
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+			<script src="../../../js/jquery.min.js"></script>
+			<script src="../../../js/browser.min.js"></script>
+			<script src="../../../js/breakpoints.min.js"></script>
+			<script src="../../../js/util.js"></script>
+			<script src="../../../js/main.js"></script>
+      		<script src="../../../js/prettify.js"></script>
+
+	</body>
+</html>

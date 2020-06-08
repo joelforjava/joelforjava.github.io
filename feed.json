@@ -6,6 +6,17 @@
     "description": "A site for all things Java",
     "items": [
         {
+            "id": "https://joelforjava.com/blog/2020/06/running-kafka-connect-from-a-container.html",
+            "title": "Running a Kafka Connector Inside a Container (Docker)",
+            "url": "https://joelforjava.com/blog/2020/06/running-kafka-connect-from-a-container.html"
+            "date_published": "2020-06-08T00:00:00-0400",
+            "content_html": "&lt;p&gt;Everywhere you look these days in the software development world, you&apos;ll find containers in use in a variety of situations and by a vast number of developers and companies. &lt;a href=&quot;https://www.docker.com/resources/what-container&quot;&gt;This article&lt;/a&gt; from Docker does a good job of explaining containers. However, containers go far beyond Docker, including &lt;a href=&quot;https://kubernetes.io&quot;&gt;Kubernetes&lt;/a&gt;, &lt;a href=&quot;https://podman.io/&quot;&gt;Podman&lt;/a&gt;, &lt;a href=&quot;http://mesos.apache.org&quot;&gt;Apache Mesos&lt;/a&gt;, and &lt;a href=&quot;https://docs.openshift.com/container-platform/4.4/welcome/index.html&quot;&gt;Red Hat OpenShift Container Platform&lt;/a&gt; among others.&lt;/p&gt;
+&lt;p&gt;I&apos;m planning on writing a series of articles that go through various stages of deploying Kafka Connect in a containerized environment. For this article, I plan on getting to the point of deploying a multi-node distributed connector using docker. I will use one source connector in standalone mode that will be used to populate a Kafka topic with data and I will deploy a sink connector in distributed mode to pull the data back out.&lt;/p&gt;
+&lt;p&gt;Later articles will explore deploying other sink connectors in distributed mode, including the Kafka-Kinesis Connector, via containers. For this article, I will be using &lt;a href=&quot;https://www.docker.com&quot;&gt;Docker&lt;/a&gt; via &lt;a href=&quot;https://docs.docker.com/compose/&quot;&gt;Docker Compose&lt;/a&gt;. I am hoping to look more into Podman and attempt deployment via Kubernetes in future articles. I am by no means an expert in any container technology, but I can mostly get around using containers in Docker. So, this is a learning experience on multiple fronts for me.&lt;/p&gt;
+",
+            "tags": [ "kafka",   "docker",   "kafka connect",   "java" ]
+        }, 
+        {
             "id": "https://joelforjava.com/blog/2019/11/27/using-assume-role-with-aws-sdk.html",
             "title": "Using AssumeRole with the AWS Java SDK",
             "url": "https://joelforjava.com/blog/2019/11/27/using-assume-role-with-aws-sdk.html"
