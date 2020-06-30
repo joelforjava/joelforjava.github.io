@@ -9,6 +9,10 @@
         <lastmod>2019-09-12</lastmod>
     </url>
     <url>
+        <loc>https://joelforjava.com/blog/2020/06/running-kafka-kinesis-connector-inside-container.html</loc>
+        <lastmod>2020-06-30</lastmod>
+    </url>
+    <url>
         <loc>https://joelforjava.com/blog/2020/06/running-kafka-connect-from-a-container.html</loc>
         <lastmod>2020-06-08</lastmod>
     </url>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-148165040-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-148165040-1');
+    </script>    
+    <meta charset="utf-8"/>
+    <title>Running the Kinesis Kafka Connector Inside a Container</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../../css/main.css" rel="stylesheet">
+    <link href="../../../css/custom.css" rel="stylesheet">
+    <link href="../../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../../favicon.ico">
+  </head>
+  <body class="is-preload" onload="prettyPrint()">
+		<!-- Content -->
+			<div id="content">
+				<div class="inner">
+	
+			<!-- Post -->
+				<article class="box post">
+					<header>
+						<!--
+							Note: Titles and subtitles will wrap automatically when necessary, so don't worry
+							if they get too long. You can also remove the <p> entirely if you don't
+							need a subtitle.
+						-->
+
+						<h2>Running the Kinesis Kafka Connector Inside a Container</h2>
+					</header>
+
+					<div class="info">
+						<!--
+							Note: The date should be formatted exactly as it's shown below. In particular, the
+							"least significant" characters of the month should be encapsulated in a <span>
+							element to denote what gets dropped in 1200px mode (eg. the "uary" in "January").
+							Oh, and if you don't need a date for a particular page or post you can simply delete
+							the entire "date" element.
+
+						-->
+						<span class="date"><span class="month">Jun<span>e</span></span> <span class="day">30</span><span class="year">, 2020</span></span>
+						<!--
+							Note: You can change the number of list items in "stats" to whatever you want. TODO - put in template?
+						-->
+					</div>
+					<p><p>In my previous <a href="/blog/2020/06/running-kafka-connect-from-a-container.html">article</a>, we walked through running a distributed Kafka Connect setup via Docker. In this article, I will be turning my attention to the Kinesis Kafka Connector and going through the steps to get it working in distributed mode and connecting to external services, e.g. an external Kafka cluster and The Kinesis Firehose service.</p>
+<p>The overall intention of this is to go through how to connect a containerized application to external, non-containerized applications. We could just as easily replace the Kinesis Kafka Connector with something like the Elasticsearch Connector.</p>
+<!--more-->
+<h3>Creating the Dockerfile</h3>
+<p>We start with creating the Dockerfile that will be used to build the container in which we will run the Connector. While I plan on incorporating this build into the project, I started with the below:</p>
+<?prettify?>
+<pre><code>FROM wurstmeister/kafka:2.12-2.3.0
+
+ARG CLUSTER_NAME=cluster_1
+
+ARG ACCESS_KEY_ID
+ARG SECRET_ACCESS_KEY
+
+ENV AWS_ACCESS_KEY_ID=${ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+
+COPY config/${CLUSTER_NAME}/worker.properties /opt/kafka/config/
+
+COPY config/${CLUSTER_NAME}/kinesis-firehose-kafka-connector.* /opt/kafka/config/
+
+COPY config/${CLUSTER_NAME}/streamMapping.yaml /opt/kafka/config/
+
+COPY target/amazon-kinesis-kafka-connector-*.jar /opt/kafka/plugins/
+
+COPY start-kafka.sh /usr/bin/
+
+RUN chmod a+x /usr/bin/start-kafka.sh
+</code></pre>
+<p>This looks similar to the Dockerfile used in the last post, except now we're adding an argument so that we can build an image for a specific cluster, with the default being <code>cluster_1</code>. We're also adding environment variables for AWS, which will be required when sending data to Kinesis. There are several other ways to handle this, but this is the solution we will be going with for now. You definitely should NOT do this if you're going to check your image into a public repository.</p>
+<p>From here, we can either do everything with docker via the command line, or we can wire up everything via Docker Compose.</p>
+<h3>Overthinking Networking</h3>
+<p>Confession: I'm not the greatest with networking. It's not something I've had to work with a lot in the past, beyond making sure an application can reach another application, e.g. Bing, Google, or other external services via a URI. In other words, the networks have always been set up for me. With this, I wasted way too much time working on the networking, assuming a solution had to be complex, when the quickest solution was far simpler.</p>
+<p>I went through a whole exercise of starting with a <code>host</code> network and then trying to do all this complicated work with creating different networks in an effort to have it the container talk to AWS and my local Kafka cluster.</p>
+<p>So, rather than go through that rabbit hole of misery, I'll just post the final solution that works on my network and it should work on other basic LANs. I'm sure there would be more involved if we were doing this in a production or cloud environment where we would want to limit access to the outside world. Maybe I'll come back to that scenario if I can manage to find the time.</p>
+<h3>Running via Docker CLI</h3>
+<p>We start with the standard <code>docker</code> commands:</p>
+<?prettify?>
+<pre><code>docker build -t kinesis_kafka_container_connect-distributed:latest --build-arg CLUSTER_NAME=cluster_1 --build-arg ACCESS_KEY_ID=fffffff --build-arg SECRET_ACCESS_KEY=ffffff .
+
+docker run -p '28083:8083' --add-host=&quot;kafka.joelforjava.local:192.168.55.57&quot; --add-host=&quot;localstack.joelforjava.local:192.168.55.57&quot; kinesis_kafka_container_connect-distributed:latest
+</code></pre>
+<p>The key part for me, was using the <code>--add-host</code> option. This will add a new entry into <code>/etc/hosts</code>. These two URLs, <code>kafka.joelforjava.local</code> and <code>localstack.joelforjava.local</code> are used in property files for the Kinesis Kafka Connector.</p>
+<p><em>Side Note</em>: I've temporarily updated my version of the Connector to use <a href="https://localstack.cloud">LocalStack</a> rather than actually connecting to AWS itself. For many reasons, I don't currently have a personal AWS account and I also can't easily do these kinds of things at my day job, so I had to find a way to test the connector out on my personal systems.</p>
+<h3>Running via Docker Compose</h3>
+<p>Choosing the Compose route, I went with the following:</p>
+<?prettify?>
+<pre><code>version: '3.3'
+
+services:
+
+  connect-distributed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8083
+    depends_on:
+      - kafka
+    network_mode: bridge
+    extra_hosts:
+      - &quot;kafka.joelforjava.local:192.168.55.57&quot;
+      - &quot;localstack.joelforjava.local:192.168.55.57&quot;
+</code></pre>
+<p>In the Compose file, you use the <code>extra_hosts</code> configuration for adding additional hosts to <code>/etc/hosts</code>.</p>
+<p>And, now I can dynamically scale up the connector, when needed by running <code>docker-compose up --scale connect-distributed=3</code>.</p>
+<p>When deploying this in production, you may have to use a different network setup, but this should be a good starting point.</p>
+<h3>Next Steps</h3>
+<p>For the next step in a future article, I hope to incorporate building docker images for various clusters into my regular build and deployment activities and I'm also hoping to dive into deploying this via Kubernetes.</p>
+</p>
+				</article>
+
+	<hr />
+	
+				</div>
+			</div>
+		<!-- Sidebar -->
+			<div id="sidebar">
+
+				<!-- Logo -->
+					<h1 id="logo">
+						<a href="../../../index.html">Joel for Java</a>
+					</h1>
+
+				<!-- Nav -->
+					<nav id="nav">
+						<ul>
+							<li ><a href="../../../index.html">Home</a></li>
+							<li ><a href="../../../archive.html">Archives</a></li>
+							<li ><a href="../../../about.html">About</a></li>
+							<li><a href="../../../feed.xml">Subscribe (RSS)</a></li>
+							<li><a href="../../../feed.json">Subscribe (JSON Feed)</a></li>
+						</ul>
+					</nav>
+
+				<!-- Text -->
+					<section class="box text-style1">
+						<div class="inner">
+							<p>
+								<a href="https://twitter.com/search?q=%23blacklivesmatter" target="_blank">#BlackLivesMatter</a>
+							</p>
+						</div>
+					</section>
+
+				<!-- Recent Posts -->
+					<section class="box recent-posts">
+						<header>
+							<h2>Recent Posts</h2>
+						</header>
+						<ul>
+                                 
+                                <li><a href="../../../blog/2020/06/running-kafka-kinesis-connector-inside-container.html">Running the Kinesis Kafka Connector Inside a Container</a></li>
+                                 
+                                <li><a href="../../../blog/2020/06/running-kafka-connect-from-a-container.html">Running a Kafka Connector Inside a Container (Docker)</a></li>
+                                 
+                                <li><a href="../../../blog/2019/11/27/using-assume-role-with-aws-sdk.html">Using AssumeRole with the AWS Java SDK</a></li>
+                                 
+                                <li><a href="../../../blog/2019/11/19/parsing-yaml-using-kotlin-objects.html">Parsing YAML Using Kotlin Objects</a></li>
+                                						</ul>
+					</section>
+
+				<!-- Copyright -->
+					<ul id="copyright">
+						<li>&copy; 2016 - 2020</li>
+                        <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                        <li>Baked with <a href="http://jbake.org">JBake v2.6.4</a></li>
+					</ul>
+
+			</div>
+
+
+
+		<!-- Scripts -->
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+			<script src="../../../js/jquery.min.js"></script>
+			<script src="../../../js/browser.min.js"></script>
+			<script src="../../../js/breakpoints.min.js"></script>
+			<script src="../../../js/util.js"></script>
+			<script src="../../../js/main.js"></script>
+      		<script src="../../../js/prettify.js"></script>
+
+	</body>
+</html>
